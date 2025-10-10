@@ -1,0 +1,84 @@
+---
+title: "BCB Report"
+subtitle: "CMRI Biostatistics and Computational Biology Core"
+format: 
+  html:
+    toc: true
+    toc-depth: 5
+    toc-location: left 
+    toc-title: "Report Contents"
+    embed-resources: true
+    code-link: true
+    code-fold: true
+    code-tools:
+        source: true
+        toggle: true
+    link-external-newwindow: true
+    smooth-scroll: true
+    theme: 
+      light: flatly
+      dark: darkly
+    params:
+      PI: "LastName.First"
+      ProjectID: "BCB.XXX"
+      AnalysisPath: "path/to/location/of/nfcore/pipeline/output/"
+      DESeqPath: "path/to/nfcore/rnaseq/deseqc.Rds/object"
+      Analyst: "LastName.First"
+      Design: "~ condition"
+---
+
+## Load Libraries
+
+```{r}
+library(tidyverse)
+library(cowplot)
+library(ggsci)
+library(ggpubr)
+library(rstatix)
+library(data.table)
+library(DT)
+library(DESeq2)
+library(Glimma2)
+```
+
+
+## Background and Objectives
+
+Information on project background and analysis goals.
+
+## Data Cleanup
+
+Any processes for cleaning up/importing/formatting data.
+
+## Data Analysis
+
+
+### Section 1
+
+
+### Section 2
+
+
+
+### Section 3
+
+
+## Results
+
+### Embedded files
+
+This can be used to directly embed results files, like CSVs or Excel files, into the document. It will then be self-contained, so anyone with the report can download the embedded file.
+
+```{r}
+xfun::embed_file()
+```
+
+## Conclusions
+
+
+## Session Info
+
+```{r}
+devtools::session_info()
+```
+
