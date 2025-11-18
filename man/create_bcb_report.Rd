@@ -4,10 +4,16 @@
 \alias{create_bcb_report}
 \title{Generate a standard analysis report from template in the current directory.}
 \usage{
-create_bcb_report(file_name = NULL, ext_name = c("bcb-report", "bulk-rnaseq"))
+create_bcb_report(
+  file_name = NULL,
+  dir = NULL,
+  ext_name = c("bcb-report", "bulk-rnaseq")
+)
 }
 \arguments{
 \item{file_name}{Name for the Quarto report file.}
+
+\item{dir}{Directory to save the report file to. Default is NULL, which will default to the current working directory.}
 
 \item{ext_name}{Which template to use. One of c("bcb-report", "bulk-rnaseq"). Use "bcb-report" for general analyses, and "bulk-rnaseq" to perform DESeq2 analysis of RNAseq datasets.}
 }
