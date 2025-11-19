@@ -38,12 +38,12 @@ format:
 ## Load Libraries
 
 ```{r}
-#library(tidyverse)
-#library(cowplot)
-#library(ggsci)
-#library(ggpubr)
+library(tidyverse)
+library(cowplot)
+library(ggsci)
+library(ggpubr)
 #library(rstatix)
-#library(data.table)
+library(data.table)
 #library(DT)
 library(DESeq2)
 #library(plotly)
