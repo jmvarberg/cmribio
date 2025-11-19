@@ -243,14 +243,6 @@ xfun::embed_file()
 
 For reports rendered to HTML, you may include interactive plots. Below, we show an example of how you can specify that the chunk with an interactive plot will only be rendered if the document is being knit to HTML - if it is knitting to a PDF or word document, then this section is skipped.
 
-```{r .content-visible when-format="html"}
-
-
-
-
-```
-
-
 
 ## Conclusions
 
