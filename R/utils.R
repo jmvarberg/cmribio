@@ -7,7 +7,9 @@
 #' @export
 #'
 #' @examples
+#' \dontrun {
 #' init_proj(dir = "./test_init", overwrite = "ask")
+#' }
 #'
 init_proj <- function(dir = NULL, overwrite = c("ask", TRUE, FALSE)) {
   overwrite <- overwrite[1]
