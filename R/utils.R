@@ -1,3 +1,14 @@
+#' Initialize Project Directory
+#'
+#' @param dir Path to parent directory to create subdirectories: data, documents, results, scripts and README.txt template
+#' @param overwrite How to handle scenario when 'dir' provided or any of the subdirectories exist. Default "ask" prompts user for how to handle. TRUE overwrites existing, FALSE stops if 'dir' exists.
+#'
+#' @returns Invisible file path to created 'dir'
+#' @export
+#'
+#' @examples
+#' init_proj(dir = "./test_init", overwrite = "ask")
+#'
 init_proj <- function(dir = NULL, overwrite = c("ask", TRUE, FALSE)) {
   overwrite <- overwrite[1]
 
