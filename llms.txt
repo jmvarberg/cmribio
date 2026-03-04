@@ -1,0 +1,26 @@
+# cmribio
+
+This package contains functions and reporting templates used for
+standard analysis and reporting for bioinformatics and biostatistics
+projects.
+
+## Installation
+
+You can install the development version of cmribio from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("jmvarberg/cmribio")
+```
+
+# Package index
+
+## All functions
+
+- [`create_bcb_report()`](https://jmvarberg.github.io/cmribio/reference/create_bcb_report.md)
+  : Generate a standard analysis report from template in the current
+  directory.
+- [`init_proj()`](https://jmvarberg.github.io/cmribio/reference/init_proj.md)
+  : Initialize Project Directory
+
