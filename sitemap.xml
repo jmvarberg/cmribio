@@ -4,12 +4,16 @@
 <url><loc>https://jmvarberg.github.io/cmribio/LICENSE.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/authors.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/index.html</loc></url>
+<url><loc>https://jmvarberg.github.io/cmribio/reference/cmri_datatable.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/reference/create_bcb_report.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/reference/demo_counts.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/reference/demo_samplesheet.html</loc></url>
+<url><loc>https://jmvarberg.github.io/cmribio/reference/grch38.html</loc></url>
+<url><loc>https://jmvarberg.github.io/cmribio/reference/grcm38.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/reference/index.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/reference/init_proj.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/reference/list_targets_templates.html</loc></url>
+<url><loc>https://jmvarberg.github.io/cmribio/reference/swap_ensmbl_for_symbols.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/reference/use_deseq_targets.html</loc></url>
 </urlset>
 
