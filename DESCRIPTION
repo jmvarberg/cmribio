@@ -26,7 +26,16 @@ Imports:
     msigdbr,
     limma,
     tibble,
-    jmvtools
+    jmvtools,
+    ggsci,
+    scales,
+    ggplot2,
+    stringr,
+    pheatmap,
+    grDevices
+Suggests:
+    annotables
 Remotes:
     github::jmvarberg/jmvtools
+    github::stephenturner/annotables
 URL: https://jmvarberg.github.io/cmribio/
