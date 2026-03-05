@@ -5,11 +5,6 @@ knitr::opts_chunk$set(dev = "png", dev.args = list(type = "cairo"))
 # Load packages required to define the pipeline:
 library(targets)
 library(tarchetypes) # Load other packages as needed.
-library(cmribio)
-
-# #load demo counts data and sample sheet and save them into working directory.
-write.csv(cmribio::demo_samplesheet, "./cmribio_demo_samplesheet.csv", row.names = F)
-data.table::fwrite(cmribio::demo_counts, "./cmribio_demo_counts_matrix.tsv", sep = "\t")
 
 # Set target options:
 tar_option_set(
@@ -203,7 +198,7 @@ list(
     description = "Creates and saves CSV files of Up and Down DEG hits for each contrast in format for Metascape upload, and returns list object of data.frames."
   ),
   tar_quarto(name = analysis_report,
-             path = "./Analysis_report.qmd",
+             path = "./DESeq2_analysis_report.qmd",
              quiet = F
   )
 )

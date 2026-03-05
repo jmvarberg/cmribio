@@ -16,4 +16,7 @@ LazyData: true
 RoxygenNote: 7.3.3
 Depends: 
     R (>= 3.5)
+Imports:
+    data.table,
+    utils
 URL: https://jmvarberg.github.io/cmribio/
