@@ -17,7 +17,3 @@ Invisible file path to created 'dir'
 \description{
 Initialize Project Directory
 }
-\examples{
-init_proj(dir = "./test_init", overwrite = "ask")
-
-}

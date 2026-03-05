@@ -6,10 +6,6 @@
 #' @returns Invisible file path to created 'dir'
 #' @export
 #'
-#' @examples
-#' \dontrun {
-#' init_proj(dir = "./test_init", overwrite = "ask")
-#' }
 #'
 init_proj <- function(dir = NULL, overwrite = c("ask", TRUE, FALSE)) {
   overwrite <- overwrite[1]
@@ -123,4 +119,18 @@ init_proj <- function(dir = NULL, overwrite = c("ask", TRUE, FALSE)) {
   }
 
   invisible(normalizePath(wd, winslash = "/"))
+}
+
+#' List available targets pipeline templates
+#'
+#' @returns List of all targets templates included in the package
+#' @export
+#'
+list_targets_templates <- function() {
+  dir <- system.file("templates", "targets-pipelines", package = "cmribio")
+  if (!nzchar(dir)) {
+    return(character())
+  }
+  files <- list.files(dir, pattern = "\\.R$", full.names = FALSE)
+  unname(files)
 }
