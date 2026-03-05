@@ -5,5 +5,11 @@
 - [`create_bcb_report()`](https://jmvarberg.github.io/cmribio/reference/create_bcb_report.md)
   : Generate a standard analysis report from template in the current
   directory.
+- [`demo_counts`](https://jmvarberg.github.io/cmribio/reference/demo_counts.md)
+  : Example bulk RNAseq counts matrix
+- [`demo_samplesheet`](https://jmvarberg.github.io/cmribio/reference/demo_samplesheet.md)
+  : Example bulk RNAseq sample sheet
 - [`init_proj()`](https://jmvarberg.github.io/cmribio/reference/init_proj.md)
   : Initialize Project Directory
+- [`list_targets_templates()`](https://jmvarberg.github.io/cmribio/reference/list_targets_templates.md)
+  : List available targets pipeline templates

@@ -24,11 +24,3 @@ init_proj(dir = NULL, overwrite = c("ask", TRUE, FALSE))
 ## Value
 
 Invisible file path to created 'dir'
-
-## Examples
-
-``` r
-init_proj(dir = "./test_init", overwrite = "ask")
-#> Parent directory does not exist. Creating it...
-#> Created README at: /home/runner/work/cmribio/cmribio/docs/reference/test_init/README.txt
-```
