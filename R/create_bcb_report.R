@@ -5,6 +5,7 @@
 #' @param ext_name Which template to use. One of c("bcb-report", "bulk-rnaseq"). Use "bcb-report" for general analyses, and "bulk-rnaseq" to perform DESeq2 analysis of RNAseq datasets.
 #'
 #' @returns Copies template file into working directory.
+#' @importFrom utils file.edit
 #' @export
 #'
 #' @examples

@@ -1,0 +1,534 @@
+---
+title: "DESeq2 Bulk RNAseq Analysis"
+subtitle: "cmribio template report"
+author: "<YOUR NAME>"
+date: today
+date-format: long
+execute:
+  echo: true
+  eval: true
+  warning: false
+  error: false
+  message: false
+format: 
+  html:
+    toc: true
+    toc-depth: 5
+    toc-location: left 
+    toc-title: "Report Contents"
+    number-sections: true
+    embed-resources: true
+    code-link: true
+    code-fold: true
+    code-summary: "Show the code"
+    code-tools:
+        source: true
+        toggle: true
+    link-external-newwindow: true
+    smooth-scroll: true
+    theme: flatly
+---
+
+```{r}
+library(targets)
+library(tarchetypes)
+library(cmribio)
+library(tidyverse)
+library(knitr)
+library(cowplot)
+library(PCAtools)
+library(ggsci)
+library(ggpubr)
+library(DESeq2)
+library(ComplexUpset)
+library(UpSetR)
+library(RColorBrewer)
+library(pheatmap)
+
+```
+
+# Overview and Summary
+
+------------------------------------------------------------------------
+
+List information here about the goals and objectives of the study, information on where data is located, how it has been pre-processed before analysis using the '_targets.R' bulk RNAseq DESeq2 analysis pipeline.
+
+## Sample Sheet
+
+Embed an interactive data table with all of the information that was included in the sample sheet.
+
+```{r}
+tar_read(sample_sheet_tracked) |> 
+  cmribio::cmri_datatable()
+```
+
+## Column Data
+
+Additional metadata was added to the samples for analysis and processing, which is captured in the column data here:
+
+
+
+# Pipeline Status
+
+```{r}
+tar_visnetwork()
+```
+
+# PCA with PCAtools
+
+Principle components analysis (PCA) 
+
+```{r}
+#| fig-width: 8
+#| fig-height: 8
+
+#PCAtools takes in the vst object from DESeq2. Load that from the targets pipeline.
+targets::tar_load(vst_norm_object)
+
+#Depending on how many design models you used, you'll need to access the correct one for plotting.
+vst_obj <- assay(vst_norm_object[[1]])
+
+#let's swap out with symbols
+ids <- rownames(vst_obj)
+grch38 <- annotables::grch38
+
+grch38 <- grch38 |> 
+  dplyr::mutate(symbol = dplyr::if_else(symbol == "", ensgene, symbol)) |> 
+  dplyr::distinct(ensgene, .keep_all = TRUE)
+
+swap <-  data.frame(ensgene = ids) |> 
+  dplyr::left_join(grch38) |> 
+  dplyr::mutate(symbol = make.unique(symbol))
+
+rownames(vst_obj) <- swap$symbol
+
+p <- pca(vst_obj, metadata = colData(vst_norm_object[[5]]), removeVar = 0.9)
+
+screeplot(p, axisLabSize = 18, titleLabSize = 22)
+
+biplot(p, colby = "cell_line", colkey = c('CT27' = 'grey75', 'CT29' = 'grey30', 'R002' = 'red', 'R003' = 'green' , 'R004' = 'blue', 'R005' = 'magenta'), labSize = 5, pointSize = 5)
+cowplot::ggsave2("./results/plots/PCA_plot_resubmission.pdf", height = 6, width = 6, units = "in")
+
+# #Look at the top loadings per PC
+# pp <- plotloadings(p,
+#     rangeRetain = 0.01,
+#     labSize = 4.0,
+#     title = 'Loadings plot',
+#     subtitle = 'PC1, PC2, PC3, PC4, PC5',
+#     caption = 'Top 1% variables',
+#     shape = 24,
+#     col = c('limegreen', 'black', 'red3'),
+#     drawConnectors = TRUE)
+# 
+# biplot(p, showLoadings = TRUE,
+#     labSize = 5, pointSize = 5, sizeLoadingsNames = 5, ntopLoadings = 8)
+# 
+# eigencorplot(p, metavars = c("rpl", "sex", "group", "cell_line"), components = getComponents(p, 1:5))
+# 
+# 
+# plotloadings(p,
+#     components = getComponents(p, c(1:3)),
+#     rangeRetain = 0.08, absolute = TRUE,
+#     col = c('black', 'pink', 'red4'),
+#     drawConnectors = TRUE, labSize = 4) + coord_flip()
+
+```
+
+# Sample-sample distance matrix with pheatmap
+
+Following from the DESeq2 Vignette.
+
+```{r}
+#| fig-width: 14
+#| fig-height: 12
+
+library(pheatmap)
+library(RColorBrewer)
+
+#Get sample distances
+sampleDists <- dist(t(vst_obj))
+sampleDistMatrix <- as.matrix(sampleDists)
+
+#Set color palette
+colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
+
+#Set annotations
+coldata <- as.data.frame(colData(vst_norm_object[[5]])) |> 
+  dplyr::select(rpl, sex)
+
+#set annotation colors for each column separately
+ann_colors <- list(
+  sex = c(Male = "navy", Female = "salmon"),
+  rpl = c(Control = "#E69F00", RPL = "#009E73")
+)
+
+
+pdf("./results/plots/Distance_matrix_RPL_Control_Sex.pdf", height=6, width = 7)
+pheatmap(sampleDistMatrix, 
+         clustering_distance_rows = sampleDists, 
+         clustering_distance_cols = sampleDists, 
+         col = colors, 
+         annotation_col = coldata,
+         annotation_row = coldata,
+         annotation_colors = ann_colors
+)
+dev.off()
+
+```
+
+
+
+
+
+# UpSet plot/Euler plot for UP/Down DEGs for each group 
+
+```{r}
+#| fig-width: 18
+#| fig-height: 10
+
+#read in the DE results object
+tar_load(results_list)
+de_results_list <- results_list[[6]]
+names(de_results_list) <- c("RPL_vs_Control", "RPL003_vs_Control", "RPL003_vs_RPL", "R002_vs_Control", "R002_vs_RPL")
+
+#get up significnat hits
+up_hits <- lapply(de_results_list, function(x) x |> dplyr::filter(padj <= 0.05, log2FoldChange > 0) |> tibble::rownames_to_column(var = "ensgene") |> dplyr::pull(ensgene))
+
+down_hits <- lapply(de_results_list, function(x) x |> dplyr::filter(padj <= 0.05, log2FoldChange < 0) |> tibble::rownames_to_column(var = "ensgene") |> dplyr::pull(ensgene))
+
+#Try UpSetPlot first for each
+#library(UpSetR)
+library(ComplexUpset)
+
+up_df <- UpSetR::fromList(up_hits) 
+down_df <- UpSetR::fromList(down_hits)
+
+up_plot <- ComplexUpset::upset(
+  up_df,
+  intersect = names(up_hits),    # <-- REQUIRED by ComplexUpset
+  set_sizes = FALSE,  # nice default bars on the left
+  n_intersections = 8, 
+  base_annotations = list(
+    'Intersection size' = intersection_size()
+  )
+) + 
+  theme_cowplot() +
+  ggtitle("Overlap of Up-regulated DEGs", subtitle = "Adj. p-val <= 0.05")
+
+down_plot <- ComplexUpset::upset(
+  down_df,
+  intersect = names(down_hits),    # <-- REQUIRED by ComplexUpset
+  set_sizes = FALSE,  # nice default bars on the left
+  n_intersections = 8, 
+  base_annotations = list(
+    'Intersection size' = intersection_size()
+  )
+) + 
+  theme_cowplot() +
+  ggtitle("Overlap of Down-regulated DEGs", subtitle = "Adj. p-val <= 0.05")
+
+cowplot::plot_grid(up_plot, down_plot)
+ggsave2("./results/plots/UpSet_plots_resubmission.pdf", height = 6, width = 12, units = "in")
+
+#let's try eulerr plots for comparison
+#cannot install GenSA dependency for eulerr package.
+# options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/rhel8/latest"))
+# # install.packages(c("GenSA","eulerr"))
+# remotes::install_github("jolars/eulerr", dependencies = FALSE)
+# # pak::repo_add(CRAN = "https://packagemanager.posit.co/cran/__linux__/rhel9/latest")
+# pak::pkg_install("eulerr", dependencies = FALSE)
+```
+
+
+# GSEA with limma::camera
+
+Here, we'll run WebGestaltR for GSEA for Control vs. RPL, Control vs. RPL003, and RPL003 vs RPL.
+
+```{r}
+#| fig-width: 18
+#| fig-height: 12
+
+library(msigdbr)
+library(limma)
+
+#get the quickomics DESeq2 test results
+de_data <- data.table::fread("./results/Quickomics/sex_karyotype_rpl/quickomics_tests.csv") |> 
+  dplyr::mutate(test = stringr::str_remove(test, "rpl_vs_|karyotype_rpl_vs_"),
+                test = stringr::str_replace(test, "_", " vs "),
+                test = as.factor(test))
+
+#split by test
+de_list <- de_data |>
+  dplyr::rename(ensembl_gene_id = UniqueID,
+                log2FoldChange = logFC) |> 
+  jmvtools::named_group_split(test)
+
+#convert split into named vectors, values = logFC, names = ENSGENE
+de_list_vectors <- lapply(de_list, tibble::deframe)
+
+#get the geneset information from msigdbr
+#Get all available gene set collections for humans
+genesets_hs <- msigdbr_collections(db_species = "HS")
+
+#pull the "C2" group which includes WikiPathways, KEGG, and others.
+c2_genesets <- msigdbr(db_species = "HS", collection = "C2")
+
+#Pull only the wikipathways subcollection
+wp_genesets <- msigdbr(db_species = "HS", subcollection = "CP:WIKIPATHWAYS")
+
+#subset the C2 gene sets to only keep gene sets that include senescence terms.
+senescence_gs <- c2_genesets |> dplyr::filter(stringr::str_detect(gs_name, "SENESCENCE"))
+
+#Pull the Hallmark 50 gene sets
+hallmark_gs <- msigdbr(db_species = "HS", collection = "H")
+
+#put the hallmark and senescence sets together
+comb_gs <- dplyr::bind_rows(hallmark_gs, senescence_gs)
+
+#put the hallmark plus full wikipathway gene sets together.
+comb_hm_wp <- dplyr::bind_rows(hallmark_gs, wp_genesets)
+
+#split into list by Gene set, with values of ENSGENES in each set
+
+#HM + Senescence
+gs_list <- split(x = comb_gs$ensembl_gene, f = comb_gs$gs_name)
+
+#HM + Full WikiPathways
+gs_list_full <- split(x = comb_hm_wp$ensembl_gene, f = comb_hm_wp$gs_name)
+
+#Hallmark only
+hm_list <- split(x = hallmark_gs$ensembl_gene, f = hallmark_gs$gs_name)
+
+#now, need to create camera index
+run_camera <- function(gs_list, stat_vector) {
+  
+  #make index
+  cam_index <- limma::ids2indices(gs_list, names(stat_vector))
+  
+  #run cameraPR
+  cam_res <- limma::cameraPR(statistic = stat_vector, index = cam_index, use.ranks = TRUE)
+}
+
+#run the cameraPR on all de_list_vectors
+
+#Run camera on Hallmark only
+camera_res_full <- lapply(de_list_vectors, run_camera, gs_list = hm_list)
+camera_res_full <- lapply(camera_res_full, function(x) x |> tibble::rownames_to_column(var = "GeneSet"))
+
+#Combine into one output data frame
+camera_res_hm_comb <- camera_res_full |> 
+  dplyr::bind_rows(.id = "Contrast") |> 
+  dplyr::filter(FDR <= 0.01)
+
+write.csv(camera_res_hm_comb, "./results/GSEA_Camera/Combined_Hallmark_GSEA_with_camera_significant_FDR_0pt01_sex_karyotype_rpl.csv", row.names = F)
+
+#Run camera on Hallmark + Full WikiPathways
+camera_hm_wp <- lapply(de_list_vectors, run_camera, gs_list = gs_list_full)
+camera_hm_wp <- lapply(camera_hm_wp, function(x) x |> tibble::rownames_to_column(var = "GeneSet"))
+
+#Combine into one output data frame
+camera_res_hm_wp_comb <- camera_hm_wp |> 
+  dplyr::bind_rows(.id = "Contrast") |> 
+  dplyr::filter(FDR <= 0.01)
+
+write.csv(camera_res_hm_wp_comb, "./results/GSEA_Camera/Combined_Hallmark_plus_Full_WikiPathways_GSEA_with_camera_significant_FDR_0pt01_sex_karyotype_rpl.csv", row.names = F)
+
+#Run camera on Hallmark + 23 Senescence Pathways
+camera_res_full_sen <- lapply(de_list_vectors, run_camera, gs_list = gs_list)
+camera_res_full_sen <- lapply(camera_res_full_sen, function(x) x |> tibble::rownames_to_column(var = "GeneSet"))
+
+#Combine into one output data frame
+camera_res_hm_comb_sen <- camera_res_full_sen |> 
+  dplyr::bind_rows(.id = "Contrast") |> 
+  dplyr::filter(FDR <= 0.01)
+
+write.csv(camera_res_hm_comb_sen, "./results/GSEA_Camera/Combined_Hallmark_plus_senescence_GSEA_with_camera_significant_FDR_0pt01_sex_karyotype_rpl.csv", row.names = F)
+
+#Make some plots
+camera_plot <- function(x, n_path = 10) {
+  
+  #Check that Contrast is a factor
+  if(is.factor(x$Contrast) == FALSE) {
+    print("Contrast column in input data frame not passed as a factor. Coercing to factor with default level names. Change levels in input and re-run if different levels are desired.")
+    x$Contrast <- factor(x$Contrast, levels = unique(x$Contrast))
+  }
+
+  #Specifying the color mapping to levels in the contrast column (which is a factor)
+  contrast_lvls <- levels(x$Contrast)
+  n_colors <- length(contrast_lvls)
+  
+  if(n_colors <= 10) {
+    #npg palette handles up to 10 colors
+    contrast_cols <- ggsci::pal_npg("nrc")(n_colors)
+  } else {
+    #igv palette handles up to 51 colors
+    contrast_cols <- ggsci::pal_igv("default")(n_colors)
+  }
+  
+  names(contrast_cols) <- contrast_lvls
+
+  #get the range of values for NGenes for Up and Down
+  ext_fun    <- scales::breaks_pretty(n = 4)
+  size_breaks <- ext_fun(c(min(x$NGenes), max(x$NGenes)))
+
+  #modify the pathway labels
+  x <- x |> 
+    dplyr::mutate(GeneSet = stringr::str_replace_all(GeneSet, "_", " ")) |> 
+                  #GeneSet = stringr::str_to_sentence(GeneSet))
+    dplyr::group_by(Direction, GeneSet) |> 
+    dplyr::mutate(MaxSig = max(-log10(FDR)))
+  
+  #Get top 10 pathways Up and Down
+  top_gs <- x |> dplyr::ungroup() |> 
+    dplyr::group_by(Direction, GeneSet) |> 
+    dplyr::summarise(MaxSigFilt = max(MaxSig)) |> 
+    dplyr::ungroup() |> 
+    dplyr::group_by(Direction) |> 
+    dplyr::arrange(desc(MaxSigFilt)) |> 
+    dplyr::slice_head(n=n_path) |> 
+    jmvtools::named_group_split(Direction)
+  #want dot plot with x = FDR, size = NGenes
+  up <- x |> 
+    dplyr::filter(Direction == "Up", GeneSet %in% top_gs$Up$GeneSet) |> 
+    ggplot(aes(x=-log10(FDR), y = reorder(GeneSet, MaxSig), size = NGenes, fill = Contrast)) +
+    geom_point(alpha = 0.7, color = "black", pch = 21) +
+    scale_size_area(
+      name   = "# Genes in Set",
+        breaks = size_breaks,
+        limits = c(min(size_breaks), max(size_breaks)),
+        max_size = 10,
+        oob = scales::oob_squish
+    ) +
+    facet_wrap(~Direction) +
+    ylab("") +
+    scale_fill_manual(values = contrast_cols) +
+    theme_bw() +
+    theme(
+      strip.background = element_blank(),
+      strip.text = element_text(face = "bold", color = "black", size = 12)
+  ) +
+    guides(fill = guide_legend(override.aes = list(size = 6), order = 1))
+  
+  down <- x |> 
+    dplyr::filter(Direction == "Down", GeneSet %in% top_gs$Down$GeneSet) |> 
+    ggplot(aes(x=-log10(FDR), y = reorder(GeneSet, MaxSig), size = NGenes, fill = Contrast)) +
+    geom_point(alpha = 0.7, color = "black", pch = 21) +
+    scale_size_area(
+      name   = "# Genes in Set",
+        breaks = size_breaks,
+        limits = c(min(size_breaks), max(size_breaks)),
+        max_size = 10,
+        oob = scales::oob_squish
+    ) +
+    facet_wrap(~Direction) +
+    ylab("") +
+    scale_fill_manual(values = contrast_cols) +
+    theme_bw() +
+    theme(
+      strip.background = element_blank(),
+      strip.text = element_text(face = "bold", color = "black", size = 12)
+  ) +
+    guides(fill = guide_legend(override.aes = list(size = 6), order = 1))
+  
+  #combine plots into one output plot
+  out <- cowplot::plot_grid(up, down, ncol = 1)
+
+  return(out)
+
+}
+
+camera_res_hm_comb <- camera_res_hm_comb |> dplyr::mutate(Contrast = factor(Contrast, levels = c("R002 vs Control", "R002 vs RPL", "R003 vs Control", "R003 vs RPL", "RPL vs Control")))
+camera_plots <- camera_plot(camera_res_hm_comb)
+camera_plots
+cowplot::ggsave2("./results/plots/Camera_pathway_dotplots_karyotype_rpl.pdf", height = 8, width = 10, units = "in")
+
+camera_plots_sen <- camera_plot(camera_res_hm_comb_sen, n_path = 15)
+camera_plots_sen
+cowplot::ggsave2("./results/plots/Camera_pathway_dotplots_karyotype_rpl_with_senescence.pdf", height = 10, width = 12, units = "in")
+
+
+camera_plots_hm_wp <- camera_plot(camera_res_hm_wp_comb, n_path = 15)
+camera_plots_hm_wp
+cowplot::ggsave2("./results/plots/Camera_pathway_dotplots_karyotype_rpl_hallmark_wikipathways.pdf", height = 10, width = 12, units = "in")
+```
+
+# Heat Maps For Pathways of Interest
+```{r}
+#| fig-width: 10
+#| fig-height: 16
+library(DESeq2)
+targets::tar_load(vst_norm_object)
+#we want the 5th object in the list, which is ~ sex + group, with RPL003, RPL and Control as groups
+vst_obj <- assay(vst_norm_object[[6]])
+
+#expectation: expression matrix with ENSG row IDs (human), input pathway name(s) from msigdbr, and list from msigdbr named by pathway with values of ENS IDs
+pathway_heatmaps <- function(expr_mat, gs_list, pathway_name, show_rowNames = FALSE) {
+
+  # expr_mat <- vst_obj
+  # gs_list = hm_list
+  # pathway_name = "HALLMARK_MYC_TARGETS_V2"
+  # 
+  #get genes to plot
+  goi <- unique(gs_list[[pathway_name]])
+  
+  expr <- expr_mat[rownames(expr_mat) %in% goi, ]
+  
+  #now, swap out ENSGENE IDs with Symbols
+  ids <- rownames(expr)
+
+  grch38 <- annotables::grch38 |> 
+    dplyr::mutate(symbol = dplyr::if_else(symbol == "", ensgene, symbol)) |> 
+    dplyr::distinct(ensgene, .keep_all = TRUE)
+
+  swap <-  data.frame(ensgene = ids) |> 
+    dplyr::left_join(grch38) |> 
+    dplyr::mutate(symbol = make.unique(symbol))
+  
+  #swap out the row names for symbols
+  rownames(expr) <- swap$symbol
+  
+  #make heatmap
+  if(show_rowNames) {
+    pheatmap::pheatmap(expr, 
+                     cluster_rows = TRUE, 
+                     cluster_cols = TRUE, 
+                     scale = "row", 
+                     color = colorRampPalette(c("darkblue", "white", "firebrick"))(100), 
+                     show_rownames = TRUE)
+  } else {
+    pheatmap::pheatmap(expr, 
+                     cluster_rows = TRUE, 
+                     cluster_cols = TRUE, 
+                     scale = "row", 
+                     color = colorRampPalette(c("darkblue", "white", "firebrick"))(100), 
+                     show_rownames = FALSE)
+    
+    
+  }
+  
+  
+}
+
+myc_v1_hm <- pathway_heatmaps(expr_mat = vst_obj, gs_list = hm_list, pathway_name = "HALLMARK_MYC_TARGETS_V1")
+
+myc_v2_hm <- pathway_heatmaps(expr_mat = vst_obj, gs_list = hm_list, pathway_name = "HALLMARK_MYC_TARGETS_V2", show_rowNames=TRUE)
+
+pdf("./results/plots/HALLMARK_MYC_TARGETS_V2_heatmap.pdf", height = 10, width = 8)
+myc_v2_hm
+dev.off()
+
+tgfb_hm <- pathway_heatmaps(expr_mat = vst_obj, gs_list = hm_list, pathway_name = "HALLMARK_TGF_BETA_SIGNALING", show_rowNames=TRUE)
+
+pdf("./results/plots/HALLMARK_TGF_BETA_SIGNALING_heatmap.pdf", height = 10, width = 8)
+tgfb_hm
+dev.off()
+```
+
+
+
+# Session Info
+
+```{r}
+sessionInfo()
+```
+

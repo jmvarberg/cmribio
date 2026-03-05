@@ -239,3 +239,119 @@ use_deseq_targets <- function(dir = NULL) {
 
 
 }
+
+
+#' Interactive data tables
+#'
+#' @param df Data frame
+#' @param digits Number of digits to include in formatted numbers.
+#' @param ... Additional parameters to pass to `DT::datatable`
+#'
+#' @return Embedded HTML data table, `DT::datatable` object
+#' @import DT tidyselect dplyr
+#' @export
+#'
+#' @examples
+#'
+#' cmri_datatable(mtcars)
+#'
+#'
+#'
+cmri_datatable <- function(df, digits=2, ...) {
+
+  if (!is.data.frame(df)) {
+    df <- as.data.frame(df)
+  }
+
+  stopifnot("Input object is not coerrcible to a data frame."= is.data.frame(df))
+
+  df |>
+    dplyr::mutate(dplyr::across(tidyselect::where(is.numeric), round, digits)) |>
+    DT::datatable(extensions = 'Buttons', options = list(
+      scrollY="true",
+      scrollX="true",
+      pageLength = 10,
+      lengthMenu = c(10, 25, 50, 100),
+      dom = 'Blfrtip',
+      buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+      ...
+    )
+    )
+}
+
+#' Convert ENSMBL IDs to Gene Symbols
+#'
+#' This is a helper function to simplify the conversion of matrix rownames formatted in ENSMBL ID format (i.e., ENSMUSG00000051951) to the corresponding
+#' gene symbols (i.e, Xkr4). This is mostly a helper tool for late stages of analysis with Seurat objects, where you want to make plots showing gene names,
+#' or you need to format with gene names as input for other analysis tools. This is also used for preparing the files needed for uploading of datasets
+#' to the Single Cell Portal.
+#'
+#' The approach uses reference tables from the `annotables` package for the conversion purposes. The grcm38 and grch38 are used for conversion for mouse and human, respectively.
+#' One-to-many mapping issues are handled by only replacing the ENSMBL ID if it maps to a unique gene name.
+#' If multiple ENSMBL IDs map to the same gene symbol, then the feature name is left in ENSMBL format.
+#'
+#' @param x Input matrix with rownames as ENSMBL IDs (i.e, as accessed by Seurat::GetAssayData(object, assay, slot))
+#' @param species Character, either "mouse" or "human" are currently supported.
+#'
+#' @return Output matrix with rownames converted from ENSMBL IDs to gene names.
+#' @importFrom rlang .data abort
+#' @import annotables
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' data <- cmribio::demo_counts
+#' orig <- rownames(data)
+#' new <- swap_ensmbl_for_symbols(data, species = "mouse")
+#' head(orig)
+#' head(new)
+#'}
+#'
+
+swap_ensmbl_for_symbols <- function(x, species = c("mouse", "human")) {
+
+  species <- match.arg(species)
+
+  # get the annotable for species
+  ref_table <- if (species == "mouse") {
+    annotables::grcm38
+  } else {
+    annotables::grch38
+  }
+
+  # row/feature names
+  eids <- rownames(x)
+  if (is.null(eids)) {
+    rlang::abort("Input object must have rownames (Ensembl IDs).")
+  }
+
+  # map IDs -> symbols
+  symbols <- ref_table$symbol[match(eids, ref_table$ensgene)]
+
+  # build df
+  df <- data.frame(
+    Original = eids,
+    New      = symbols,
+    stringsAsFactors = FALSE
+  )
+
+  # symbols that map to multiple IDs (including handling NAs safely)
+  # duplicated() handles NA as duplicated NA; we keep those in multi-matches
+  multi_matches <- unique(df$New[duplicated(df$New) & !is.na(df$New)])
+
+  # for multi-mapped symbols, keep the Ensembl ID; otherwise use the symbol
+  df <- df |>
+    dplyr::mutate(
+      Final = dplyr::if_else(
+        .data$New %in% multi_matches | is.na(.data$New),
+        .data$Original,
+        .data$New
+      )
+    )
+
+  # replace rownames and return
+  rownames(x) <- df$Final
+  x
+}
+
+
