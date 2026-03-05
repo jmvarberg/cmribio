@@ -13,3 +13,5 @@
   : Initialize Project Directory
 - [`list_targets_templates()`](https://jmvarberg.github.io/cmribio/reference/list_targets_templates.md)
   : List available targets pipeline templates
+- [`use_deseq_targets()`](https://jmvarberg.github.io/cmribio/reference/use_deseq_targets.md)
+  : Use targets pipeline templates for bulk RNAseq analysis with DESeq2
