@@ -15,7 +15,7 @@ tar_option_set(
 
 # Run the R scripts in the R/ folder with your custom functions:
 # This reads in an R script containing the analysis functions required to run the targets pipeline for DESeq2 analysis.
-tar_source("./scripts/targets_bulkRNA_functions.R") # Source other scripts as needed.
+tar_source("./targets_bulkRNA_DESeq2_functions.R") # Source other scripts as needed.
 
 # Below is the targets pipeline for bulk RNAseq analysis using DESeq2.
 # This pipeline assumes that you are starting with a sample sheet containing sample metadata, and a raw counts matrix (feature X sample)

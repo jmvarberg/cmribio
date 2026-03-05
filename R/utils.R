@@ -146,30 +146,39 @@ list_targets_templates <- function() {
 
 use_deseq_targets <- function(dir = NULL) {
 
+
   # Resolve project directory
   if (is.null(dir)) {
     wd <- getwd()
 
-    reply <- utils::askYesNo(
-      sprintf(
-        "No directory specified - using current working directory '%s'. Do you want to proceed? Existing versions of the _targets pipeline script, functions and Quarto report file will be overwritten.",
-        normalizePath(wd, winslash = "/")
-      ),
-      default = FALSE
+
+    msg <- sprintf(
+      "No directory specified - using current working directory '%s'. Do you want to proceed? Existing versions of the _targets pipeline script, functions and Quarto report file will be overwritten.",
+      normalizePath(wd, winslash = "/")
     )
+
+    # Wrap to console width (or set a specific width)
+    wrapped <- paste(strwrap(msg, width = getOption("width", 80)), collapse = "\n")
+
+    reply <- utils::askYesNo(wrapped, default = FALSE)
+
+
   } else {
+    dir <- normalizePath(dir)
     if (!dir.exists(dir)) {
       message("Specified directory does not exist. Creating it now...")
       dir.create(dir, recursive = TRUE, showWarnings = FALSE)
     } else {
 
-      reply <- utils::askYesNo(
-        sprintf(
-          "Specified directory already exists under '%s'. Do you want to proceed? Existing versions of the _targets pipeline script, functions and Quarto report file will be overwritten.",
-          normalizePath(wd, winslash = "/")
-        ),
-        default = FALSE
+      msg <- sprintf(
+        "Specified directory already exists '%s'. Do you want to proceed? Existing versions of the _targets pipeline script, functions and Quarto report file will be overwritten.",
+        normalizePath(wd, winslash = "/")
       )
+
+      # Wrap to console width (or set a specific width)
+      wrapped <- paste(strwrap(msg, width = getOption("width", 80)), collapse = "\n")
+
+      reply <- utils::askYesNo(wrapped, default = FALSE)
     }
     wd <- dir
   }
