@@ -195,7 +195,7 @@ use_deseq_targets <- function(dir = NULL) {
   }
 
   # Copy functions file needed for the pipeline.
-  functions_path <- system.file("templates", "targets-functions", "_targets_bulkRNA_DESeq2_functions.R",
+  functions_path <- system.file("templates", "targets-functions", "targets_bulkRNA_DESeq2_functions.R",
                                package = "cmribio")
 
   if (functions_path == "") {
@@ -205,7 +205,7 @@ use_deseq_targets <- function(dir = NULL) {
   # Copy the file to the new location with a new name
   success <- file.copy(
     from = functions_path,
-    to = file.path(wd, "_targets_bulkRNA_DESeq2_functions.R"),
+    to = file.path(wd, "targets_bulkRNA_DESeq2_functions.R"),
     overwrite = TRUE
   )
 
@@ -214,7 +214,7 @@ use_deseq_targets <- function(dir = NULL) {
   }
 
   # Copy Quarto report file needed for the pipeline.
-  report_path <- system.file("templates", "targets-quarto", "_targets_bulkRNA_DESeq2_report.qmd",
+  report_path <- system.file("templates", "targets-quarto", "DESeq2_analysis_report.qmd",
                                 package = "cmribio")
 
   if (report_path == "") {
