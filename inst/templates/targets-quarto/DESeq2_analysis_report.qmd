@@ -44,6 +44,8 @@ library(ComplexUpset)
 library(UpSetR)
 library(RColorBrewer)
 library(pheatmap)
+library(msigdbr)
+library(limma)
 
 ```
 
@@ -87,50 +89,22 @@ targets::tar_load(vst_norm_object)
 
 #Depending on how many design models you used, you'll need to access the correct one for plotting.
 vst_obj <- assay(vst_norm_object[[1]])
+vst_md <- colData(vst_norm_object[[1]])
 
 #let's swap out with symbols
-ids <- rownames(vst_obj)
-grch38 <- annotables::grch38
+vst_obj <- cmribio::swap_ensmbl_for_symbols(vst_obj, species = "mouse")
 
-grch38 <- grch38 |> 
-  dplyr::mutate(symbol = dplyr::if_else(symbol == "", ensgene, symbol)) |> 
-  dplyr::distinct(ensgene, .keep_all = TRUE)
-
-swap <-  data.frame(ensgene = ids) |> 
-  dplyr::left_join(grch38) |> 
-  dplyr::mutate(symbol = make.unique(symbol))
-
-rownames(vst_obj) <- swap$symbol
-
-p <- pca(vst_obj, metadata = colData(vst_norm_object[[5]]), removeVar = 0.9)
+p <- pca(vst_obj, metadata = vst_md, removeVar = 0.9) #use the top 10% most variable features by default.
 
 screeplot(p, axisLabSize = 18, titleLabSize = 22)
 
-biplot(p, colby = "cell_line", colkey = c('CT27' = 'grey75', 'CT29' = 'grey30', 'R002' = 'red', 'R003' = 'green' , 'R004' = 'blue', 'R005' = 'magenta'), labSize = 5, pointSize = 5)
-cowplot::ggsave2("./results/plots/PCA_plot_resubmission.pdf", height = 6, width = 6, units = "in")
+biplot(p, colby = "group", colkey = c('Macrophage' = 'grey75', 'MNGC' = 'grey30', 'Stroma' = 'red'), labSize = 5, pointSize = 5)
+cowplot::ggsave2("./results/plots/PCA_plot.pdf", height = 6, width = 6, units = "in")
 
-# #Look at the top loadings per PC
-# pp <- plotloadings(p,
-#     rangeRetain = 0.01,
-#     labSize = 4.0,
-#     title = 'Loadings plot',
-#     subtitle = 'PC1, PC2, PC3, PC4, PC5',
-#     caption = 'Top 1% variables',
-#     shape = 24,
-#     col = c('limegreen', 'black', 'red3'),
-#     drawConnectors = TRUE)
-# 
-# biplot(p, showLoadings = TRUE,
-#     labSize = 5, pointSize = 5, sizeLoadingsNames = 5, ntopLoadings = 8)
-# 
-# eigencorplot(p, metavars = c("rpl", "sex", "group", "cell_line"), components = getComponents(p, 1:5))
-# 
-# 
-# plotloadings(p,
-#     components = getComponents(p, c(1:3)),
-#     rangeRetain = 0.08, absolute = TRUE,
-#     col = c('black', 'pink', 'red4'),
-#     drawConnectors = TRUE, labSize = 4) + coord_flip()
+
+#Make plot with top features in each PC loadings
+biplot(p, showLoadings = TRUE,
+    labSize = 5, pointSize = 5, sizeLoadingsNames = 5, ntopLoadings = 8)
 
 ```
 
@@ -141,9 +115,6 @@ Following from the DESeq2 Vignette.
 ```{r}
 #| fig-width: 14
 #| fig-height: 12
-
-library(pheatmap)
-library(RColorBrewer)
 
 #Get sample distances
 sampleDists <- dist(t(vst_obj))
@@ -158,12 +129,10 @@ coldata <- as.data.frame(colData(vst_norm_object[[5]])) |>
 
 #set annotation colors for each column separately
 ann_colors <- list(
-  sex = c(Male = "navy", Female = "salmon"),
-  rpl = c(Control = "#E69F00", RPL = "#009E73")
+  group = c(Macrophage = "navy", MNGC = "salmon", Stroma = "#E69F00")
 )
 
-
-pdf("./results/plots/Distance_matrix_RPL_Control_Sex.pdf", height=6, width = 7)
+pdf("./results/plots/Sample_sample_distance_matrix.pdf", height=6, width = 7)
 pheatmap(sampleDistMatrix, 
          clustering_distance_rows = sampleDists, 
          clustering_distance_cols = sampleDists, 
@@ -177,10 +146,7 @@ dev.off()
 ```
 
 
-
-
-
-# UpSet plot/Euler plot for UP/Down DEGs for each group 
+# UpSet plot for UP/Down DEGs for each group 
 
 ```{r}
 #| fig-width: 18
@@ -188,16 +154,15 @@ dev.off()
 
 #read in the DE results object
 tar_load(results_list)
-de_results_list <- results_list[[6]]
+de_results_list <- results_list[[1]]
 names(de_results_list) <- c("RPL_vs_Control", "RPL003_vs_Control", "RPL003_vs_RPL", "R002_vs_Control", "R002_vs_RPL")
 
-#get up significnat hits
+#get up significant hits
 up_hits <- lapply(de_results_list, function(x) x |> dplyr::filter(padj <= 0.05, log2FoldChange > 0) |> tibble::rownames_to_column(var = "ensgene") |> dplyr::pull(ensgene))
 
 down_hits <- lapply(de_results_list, function(x) x |> dplyr::filter(padj <= 0.05, log2FoldChange < 0) |> tibble::rownames_to_column(var = "ensgene") |> dplyr::pull(ensgene))
 
-#Try UpSetPlot first for each
-#library(UpSetR)
+library(UpSetR)
 library(ComplexUpset)
 
 up_df <- UpSetR::fromList(up_hits) 
@@ -228,32 +193,22 @@ down_plot <- ComplexUpset::upset(
   ggtitle("Overlap of Down-regulated DEGs", subtitle = "Adj. p-val <= 0.05")
 
 cowplot::plot_grid(up_plot, down_plot)
-ggsave2("./results/plots/UpSet_plots_resubmission.pdf", height = 6, width = 12, units = "in")
+ggsave2("./results/plots/UpSet_plots.pdf", height = 6, width = 12, units = "in")
 
-#let's try eulerr plots for comparison
-#cannot install GenSA dependency for eulerr package.
-# options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/rhel8/latest"))
-# # install.packages(c("GenSA","eulerr"))
-# remotes::install_github("jolars/eulerr", dependencies = FALSE)
-# # pak::repo_add(CRAN = "https://packagemanager.posit.co/cran/__linux__/rhel9/latest")
-# pak::pkg_install("eulerr", dependencies = FALSE)
 ```
 
 
 # GSEA with limma::camera
 
-Here, we'll run WebGestaltR for GSEA for Control vs. RPL, Control vs. RPL003, and RPL003 vs RPL.
+Here, we run pathway enrichment using limma::cameraPR() for pre-ranked (log2FoldChange) values for each comparison.
 
 ```{r}
 #| fig-width: 18
 #| fig-height: 12
 
-library(msigdbr)
-library(limma)
-
 #get the quickomics DESeq2 test results
-de_data <- data.table::fread("./results/Quickomics/sex_karyotype_rpl/quickomics_tests.csv") |> 
-  dplyr::mutate(test = stringr::str_remove(test, "rpl_vs_|karyotype_rpl_vs_"),
+de_data <- data.table::fread("./results/Quickomics/group/quickomics_tests.csv") |> 
+  dplyr::mutate(test = stringr::str_remove(test, "group_"),
                 test = stringr::str_replace(test, "_", " vs "),
                 test = as.factor(test))
 
@@ -269,7 +224,7 @@ de_list_vectors <- lapply(de_list, tibble::deframe)
 #get the geneset information from msigdbr
 #Get all available gene set collections for humans
 genesets_hs <- msigdbr_collections(db_species = "HS")
-
+genesets_mm <- msigdbr_collections(db_species = "MM")
 #pull the "C2" group which includes WikiPathways, KEGG, and others.
 c2_genesets <- msigdbr(db_species = "HS", collection = "C2")
 

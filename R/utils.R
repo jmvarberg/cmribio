@@ -266,7 +266,7 @@ cmri_datatable <- function(df, digits=2, ...) {
   stopifnot("Input object is not coerrcible to a data frame."= is.data.frame(df))
 
   df |>
-    dplyr::mutate(dplyr::across(tidyselect::where(is.numeric), round, digits)) |>
+    dplyr::mutate(dplyr::across(where(is.numeric), \(x) round(x, digits))) |>
     DT::datatable(extensions = 'Buttons', options = list(
       scrollY="true",
       scrollX="true",

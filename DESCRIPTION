@@ -22,5 +22,11 @@ Imports:
     DT,
     dplyr,
     tidyselect,
-    rlang
+    rlang,
+    msigdbr,
+    limma,
+    tibble,
+    jmvtools
+Remotes:
+    github::jmvarberg/jmvtools
 URL: https://jmvarberg.github.io/cmribio/
