@@ -61,7 +61,7 @@
 #'
 #'
 #'
-#' @keywords datasets
+#' @keywords internal
 "grcm38"
 
 #' Annotation table for human using ENSMBL GRCh38 from stephenturner/annotables package.
@@ -82,5 +82,5 @@
 #'
 #'
 #'
-#' @keywords datasets
+#' @keywords internal
 "grch38"

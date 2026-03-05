@@ -36,6 +36,6 @@ Imports:
 Suggests:
     annotables
 Remotes:
-    github::jmvarberg/jmvtools
+    github::jmvarberg/jmvtools,
     github::stephenturner/annotables
 URL: https://jmvarberg.github.io/cmribio/
