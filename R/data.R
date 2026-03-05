@@ -42,3 +42,45 @@
 #'
 #' @keywords datasets
 "demo_samplesheet"
+
+#' Annotation table for mouse using ENSMBL GRCm38 from stephenturner/annotables package.
+#'
+#'
+#' @format A data frame mouse annotation information.
+#'
+#' @details
+#' Used for annotating datasets, swapping IDs between types etc.
+#' \code{data-raw/grcm38.R}.
+#'
+#' @source Generated in \code{data-raw/grcm38.R}.
+#'
+#' @examples
+#' # Basic usage
+#' head(grcm38)
+#' colnames(grcm38)
+#'
+#'
+#'
+#' @keywords datasets
+"grcm38"
+
+#' Annotation table for human using ENSMBL GRCh38 from stephenturner/annotables package.
+#'
+#'
+#' @format A data frame mouse annotation information.
+#'
+#' @details
+#' Used for annotating datasets, swapping IDs between types etc.
+#' \code{data-raw/grch38.R}.
+#'
+#' @source Generated in \code{data-raw/grch38.R}.
+#'
+#' @examples
+#' # Basic usage
+#' head(grch38)
+#' colnames(grch38)
+#'
+#'
+#'
+#' @keywords datasets
+"grch38"

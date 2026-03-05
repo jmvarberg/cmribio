@@ -21,7 +21,6 @@ Imports:
     utils,
     DT,
     dplyr,
-    annotables,
     tidyselect,
     rlang
 URL: https://jmvarberg.github.io/cmribio/

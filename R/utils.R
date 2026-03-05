@@ -290,12 +290,11 @@ cmri_datatable <- function(df, digits=2, ...) {
 #' One-to-many mapping issues are handled by only replacing the ENSMBL ID if it maps to a unique gene name.
 #' If multiple ENSMBL IDs map to the same gene symbol, then the feature name is left in ENSMBL format.
 #'
-#' @param x Input matrix with rownames as ENSMBL IDs (i.e, as accessed by Seurat::GetAssayData(object, assay, slot))
+#' @param x Input matrix with rownames as ENSMBL IDs
 #' @param species Character, either "mouse" or "human" are currently supported.
 #'
 #' @return Output matrix with rownames converted from ENSMBL IDs to gene names.
 #' @importFrom rlang .data abort
-#' @import annotables
 #' @export
 #'
 #' @examples
@@ -314,9 +313,9 @@ swap_ensmbl_for_symbols <- function(x, species = c("mouse", "human")) {
 
   # get the annotable for species
   ref_table <- if (species == "mouse") {
-    annotables::grcm38
+    cmribio::grcm38
   } else {
-    annotables::grch38
+    cmribio::grch38
   }
 
   # row/feature names

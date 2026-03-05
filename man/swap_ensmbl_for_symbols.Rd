@@ -7,7 +7,7 @@
 swap_ensmbl_for_symbols(x, species = c("mouse", "human"))
 }
 \arguments{
-\item{x}{Input matrix with rownames as ENSMBL IDs (i.e, as accessed by Seurat::GetAssayData(object, assay, slot))}
+\item{x}{Input matrix with rownames as ENSMBL IDs}
 
 \item{species}{Character, either "mouse" or "human" are currently supported.}
 }
