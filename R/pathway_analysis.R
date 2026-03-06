@@ -107,28 +107,32 @@ run_cameraPR <- function(geneset_df, de_results,
                          ens_col = "ensemble_gene_id",
                          comp_col = "test") {
 
-    #split data frame of gene sets into a list
-    gs_list <- split(x = geneset_df$ensembl_gene, f = geneset_df$gs_name)
+  #split data frame of gene sets into a list
+  gs_list <- split(x = geneset_df$ensembl_gene, f = geneset_df$gs_name)
 
-    #convert dataframe with full DE results (not filtered for logFC or FDR) into list of named vectors with logFC values and ENSEMBL IDs as names
-    #split by test
-    de_list <- de_results |>
-      dplyr::select(.data[[fc_col]], .data[[ens_col]], .data[[comp_col]]) |>
-      jmvtools::named_group_split(.data[[comp_col]])
+  #convert dataframe with full DE results (not filtered for logFC or FDR) into list of named vectors with logFC values and ENSEMBL IDs as names
+  #split by test
+  de_list <- de_results |>
+    dplyr::select(.data[[fc_col]], .data[[ens_col]], .data[[comp_col]]) |>
+    jmvtools::named_group_split(.data[[comp_col]])
 
-    #convert split into named vectors, values = logFC, names = ENSGENE
-    de_list_vectors <- lapply(de_list, tibble::deframe)
+  #convert split into named vectors, values = logFC, names = ENSGENE
+  de_list_vectors <- lapply(de_list, function(x) {
+    x |>
+      dplyr::select(.data[[ens_col]], .data[[fc_col]]) |>
+      tibble::deframe()
+  })
 
-    #This function takes a list of gene sets, and a vector of logFC values with ENSGENE names. Creates and index and runs cameraPR on it.
-    index_and_run <- function(gs_list, logFC_vector) {
-      cam_index <- limma::ids2indices(gs_list, names(logFC_vector))
-      camPR_res <- limma::cameraPR(statistic = logFC_vector, index = cam_index, use.ranks = TRUE)
-    }
+  #This function takes a list of gene sets, and a vector of logFC values with ENSGENE names. Creates and index and runs cameraPR on it.
+  index_and_run <- function(gs_list, logFC_vector) {
+    cam_index <- limma::ids2indices(gs_list, names(logFC_vector))
+    camPR_res <- limma::cameraPR(statistic = logFC_vector, index = cam_index, use.ranks = TRUE)
+  }
 
-    #now, we run this on each logFC vector in our list of DE results - one for each comparison made
-    camera_results <- lapply(gs_list, index_and_run, logFC_vector = de_list_vectors)
+  #now, we run this on each logFC vector in our list of DE results - one for each comparison made
+  camera_results <- lapply(de_list_vectors, index_and_run, gs_list = gs_list)
 
-    return(camera_results)
+  return(camera_results)
 
 }
 

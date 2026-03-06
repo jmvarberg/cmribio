@@ -40,12 +40,20 @@ library(PCAtools)
 library(ggsci)
 library(ggpubr)
 library(DESeq2)
-library(ComplexUpset)
+#library(ComplexUpset)
 library(UpSetR)
 library(RColorBrewer)
 library(pheatmap)
 library(msigdbr)
 library(limma)
+library(grid)
+
+#Create output directories within results if they don't already exist
+plots_out <- file.path(getwd(), "results/plots")
+if(!dir.exists(plots_out)) {
+  message("Creating plots output directory at /results/plots")
+  dir.create(plots_out, recursive = TRUE)
+}
 
 ```
 
@@ -98,13 +106,12 @@ p <- pca(vst_obj, metadata = vst_md, removeVar = 0.9) #use the top 10% most vari
 
 screeplot(p, axisLabSize = 18, titleLabSize = 22)
 
-biplot(p, colby = "group", colkey = c('Macrophage' = 'grey75', 'MNGC' = 'grey30', 'Stroma' = 'red'), labSize = 5, pointSize = 5)
+biplot(p, colby = "group", colkey = c('Macrophage' = 'grey75', 'MNGC' = 'grey30', 'Stroma' = 'red'), labSize = 5, pointSize = 5, legendPosition = "bottom")
 cowplot::ggsave2("./results/plots/PCA_plot.pdf", height = 6, width = 6, units = "in")
 
 
 #Make plot with top features in each PC loadings
-biplot(p, showLoadings = TRUE,
-    labSize = 5, pointSize = 5, sizeLoadingsNames = 5, ntopLoadings = 8)
+biplot(p, showLoadings = TRUE, colby = "group", colkey = c('Macrophage' = 'grey75', 'MNGC' = 'grey30', 'Stroma' = 'red'), labSize = 5, pointSize = 5, sizeLoadingsNames = 5, ntopLoadings = 8)
 
 ```
 
@@ -124,8 +131,8 @@ sampleDistMatrix <- as.matrix(sampleDists)
 colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
 
 #Set annotations
-coldata <- as.data.frame(colData(vst_norm_object[[5]])) |> 
-  dplyr::select(rpl, sex)
+coldata <- as.data.frame(colData(vst_norm_object[[1]])) |> 
+  dplyr::select(sample, group)
 
 #set annotation colors for each column separately
 ann_colors <- list(
@@ -145,6 +152,26 @@ dev.off()
 
 ```
 
+# Quickomics Files
+
+Files were generated for uploading to [Quickomics](https://quickomics.bxgenomics.com/) for interactive data visualizations.
+
+```{r}
+tar_load(quickomics_files)
+
+xfun::embed_dir("./results/Quickomics/")
+```
+
+# Metascape Files
+
+We also generate files to upload to [Metascape](https://metascape.org/) for pathway and network analysis.
+
+```{r}
+tar_load(metascape_files)
+
+xfun::embed_dir("./results/Metascape/")
+```
+
 
 # UpSet plot for UP/Down DEGs for each group 
 
@@ -155,45 +182,52 @@ dev.off()
 #read in the DE results object
 tar_load(results_list)
 de_results_list <- results_list[[1]]
-names(de_results_list) <- c("RPL_vs_Control", "RPL003_vs_Control", "RPL003_vs_RPL", "R002_vs_Control", "R002_vs_RPL")
+comparisons <- unique(unlist(lapply(de_results_list, `[[`, "comparison")))
+names(de_results_list) <- comparisons
 
 #get up significant hits
 up_hits <- lapply(de_results_list, function(x) x |> dplyr::filter(padj <= 0.05, log2FoldChange > 0) |> tibble::rownames_to_column(var = "ensgene") |> dplyr::pull(ensgene))
 
 down_hits <- lapply(de_results_list, function(x) x |> dplyr::filter(padj <= 0.05, log2FoldChange < 0) |> tibble::rownames_to_column(var = "ensgene") |> dplyr::pull(ensgene))
 
-library(UpSetR)
-library(ComplexUpset)
-
 up_df <- UpSetR::fromList(up_hits) 
 down_df <- UpSetR::fromList(down_hits)
 
-up_plot <- ComplexUpset::upset(
-  up_df,
-  intersect = names(up_hits),    # <-- REQUIRED by ComplexUpset
-  set_sizes = FALSE,  # nice default bars on the left
-  n_intersections = 8, 
-  base_annotations = list(
-    'Intersection size' = intersection_size()
-  )
-) + 
-  theme_cowplot() +
-  ggtitle("Overlap of Up-regulated DEGs", subtitle = "Adj. p-val <= 0.05")
+up_plot <- UpSetR::upset(up_df, order.by = "freq", nintersects = 10, group.by = "sets", text.scale = 1.8)
+down_plot <- UpSetR::upset(down_df, order.by = "freq", nintersects = 10, group.by = "sets", text.scale = 1.8)
+up_plot
+grid.text("Up DEGs Overlap",x = 0.65, y=0.98, gp=gpar(fontsize=14))
 
-down_plot <- ComplexUpset::upset(
-  down_df,
-  intersect = names(down_hits),    # <-- REQUIRED by ComplexUpset
-  set_sizes = FALSE,  # nice default bars on the left
-  n_intersections = 8, 
-  base_annotations = list(
-    'Intersection size' = intersection_size()
-  )
-) + 
-  theme_cowplot() +
-  ggtitle("Overlap of Down-regulated DEGs", subtitle = "Adj. p-val <= 0.05")
+down_plot
+grid.text("Down DEGs Overlap",x = 0.65, y=0.98, gp=gpar(fontsize=14))
 
-cowplot::plot_grid(up_plot, down_plot)
-ggsave2("./results/plots/UpSet_plots.pdf", height = 6, width = 12, units = "in")
+
+# up_plot <- ComplexUpset::upset(
+#   up_df,
+#   intersect = names(up_hits),    # <-- REQUIRED by ComplexUpset
+#   set_sizes = FALSE,  # nice default bars on the left
+#   n_intersections = 8, 
+#   base_annotations = list(
+#     'Intersection size' = intersection_size()
+#   )
+# ) + 
+#   theme_cowplot() +
+#   ggtitle("Overlap of Up-regulated DEGs", subtitle = "Adj. p-val <= 0.05")
+# 
+# down_plot <- ComplexUpset::upset(
+#   down_df,
+#   intersect = names(down_hits),    # <-- REQUIRED by ComplexUpset
+#   set_sizes = FALSE,  # nice default bars on the left
+#   n_intersections = 8, 
+#   base_annotations = list(
+#     'Intersection size' = intersection_size()
+#   )
+# ) + 
+#   theme_cowplot() +
+#   ggtitle("Overlap of Down-regulated DEGs", subtitle = "Adj. p-val <= 0.05")
+
+
+#ggsave2("./results/plots/UpSet_plots.pdf", height = 6, width = 12, units = "in")
 
 ```
 
@@ -207,7 +241,7 @@ Here, we run pathway enrichment using limma::cameraPR() for pre-ranked (log2Fold
 #| fig-height: 12
 
 #get the quickomics DESeq2 test results
-de_data <- data.table::fread("./results/Quickomics/group/quickomics_tests.csv") |> 
+de_data <- data.table::fread("./results/Quickomics/group/quickomics_comparison.csv") |> 
   dplyr::mutate(test = stringr::str_remove(test, "group_"),
                 test = stringr::str_replace(test, "_", " vs "),
                 test = as.factor(test))
@@ -215,13 +249,51 @@ de_data <- data.table::fread("./results/Quickomics/group/quickomics_tests.csv") 
 #Get the gene sets of interest for pathway enrichment. Default to use Hallmark 50 only
 genesets <- cmribio::get_genesets(species = "mouse", sets = "hallmark")
 
-#run cameraPR using hte genesets chosen, on all comparisons in the DE data frame
-camera_results <- cmribio::run_cameraPR(de_results = de_data, geneset_df = genesets, fc_col = "logFC", ens_col = "UniqueID", comp_col = "test")
+run_cameraPR_debug <- function(geneset_df, de_results,
+                         fc_col = "log2FoldChange",
+                         ens_col = "ensemble_gene_id",
+                         comp_col = "test") {
+
+    #split data frame of gene sets into a list
+    gs_list <- split(x = geneset_df$ensembl_gene, f = geneset_df$gs_name)
+
+    #convert dataframe with full DE results (not filtered for logFC or FDR) into list of named vectors with logFC values and ENSEMBL IDs as names
+    #split by test
+    de_list <- de_results |>
+      dplyr::select(.data[[fc_col]], .data[[ens_col]], .data[[comp_col]]) |>
+      jmvtools::named_group_split(.data[[comp_col]])
+
+    #convert split into named vectors, values = logFC, names = ENSGENE
+    de_list_vectors <- lapply(de_list, function(x) {
+      x |> 
+        dplyr::select(.data[[ens_col]], .data[[fc_col]]) |> 
+        tibble::deframe()
+    })
+
+    #This function takes a list of gene sets, and a vector of logFC values with ENSGENE names. Creates and index and runs cameraPR on it.
+    index_and_run <- function(gs_list, logFC_vector) {
+      cam_index <- limma::ids2indices(gs_list, names(logFC_vector))
+      camPR_res <- limma::cameraPR(statistic = logFC_vector, index = cam_index, use.ranks = TRUE)
+    }
+
+    #now, we run this on each logFC vector in our list of DE results - one for each comparison made
+    camera_results <- lapply(de_list_vectors, index_and_run, gs_list = gs_list)
+
+    return(camera_results)
+
+}
+
+camera_results <- run_cameraPR_debug(de_results = de_data, geneset_df = genesets, fc_col = "logFC", ens_col = "UniqueID", comp_col = "test")
+
+
+# #run cameraPR using hte genesets chosen, on all comparisons in the DE data frame
+# camera_results <- cmribio::run_cameraPR(de_results = de_data, geneset_df = genesets, fc_col = "logFC", ens_col = "UniqueID", comp_col = "test")
 
 #Combine into one output data frame
 camera_res_comb <- camera_results |> 
   dplyr::bind_rows(.id = "Contrast") |> 
-  dplyr::filter(FDR <= 0.01)
+  dplyr::filter(FDR <= 0.01) |> 
+  tibble::rownames_to_column(var = "GeneSet")
 
 # write.csv(camera_res_hm_comb, "./results/Hallmark_camera_significant_FDR_0pt01.csv", row.names = F)
 
