@@ -1,6 +1,6 @@
-# Use targets pipeline templates for bulk RNAseq analysis with DESeq2
+# Use targets pipeline templates
 
-Use targets pipeline templates for bulk RNAseq analysis with DESeq2
+Use targets pipeline templates
 
 ## Usage
 
@@ -13,7 +13,7 @@ use_targets_template(dir = NULL, type = c("deseq2"))
 - dir:
 
   default = NULL, which will use current working directory; path to
-  directory to copy tempate files to
+  directory to copy template files to
 
 - type:
 
@@ -22,7 +22,5 @@ use_targets_template(dir = NULL, type = c("deseq2"))
 
 ## Value
 
-copies three files: \_targets.R (pipeline script),
-\_targets_bulkRNA_DESeq2_functions.R (functions to run pipeline), and
-DESeq2_analysis_report.qmd (Quarto report template). Also makes copies
-of the demo counts matrix and sample sheet for testing the pipeline.
+copies template files, functions, Quarto report templates and any demo
+data needed to run the pipeline into the working directory.
