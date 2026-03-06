@@ -123,34 +123,35 @@ init_proj <- function(dir = NULL, overwrite = c("ask", TRUE, FALSE)) {
 
 #' List available targets pipeline templates
 #'
-#' @returns List of all targets templates included in the package
+#' @returns Data frame with names and descriptions of templates available in the package, and they 'type' value to provide to cmribio::use_targets_template() to access.
 #' @export
 #'
+#' @examples
+#' list_targets_templates()
+#'
 list_targets_templates <- function() {
-  dir <- system.file("templates", "targets-pipelines", package = "cmribio")
-  if (!nzchar(dir)) {
-    return(character())
-  }
-  files <- list.files(dir, pattern = "\\.R$", full.names = FALSE)
-  unname(files)
+
+  data.frame(Name = c("DEseq2"),
+                    Type = c("deseq2"),
+                    Description = c("DESeq2 for bulk RNAseq analysis"))
+
 }
 
 
 #' Use targets pipeline templates for bulk RNAseq analysis with DESeq2
 #'
 #' @param dir default = NULL, which will use current working directory; path to directory to copy tempate files to
-#'
+#' @param type character, choose which targets pipeline template to use. Available options include "deseq2".
 #' @returns copies three files: _targets.R (pipeline script), _targets_bulkRNA_DESeq2_functions.R (functions to run pipeline), and DESeq2_analysis_report.qmd (Quarto report template). Also makes copies of the demo counts matrix and sample sheet for testing the pipeline.
 #'
 #' @export
 
-use_deseq_targets <- function(dir = NULL) {
+use_targets_template <- function(dir = NULL, type = c("deseq2")) {
 
 
   # Resolve project directory
   if (is.null(dir)) {
     wd <- getwd()
-
 
     msg <- sprintf(
       "No directory specified - using current working directory '%s'. Do you want to proceed? Existing versions of the _targets pipeline script, functions and Quarto report file will be overwritten.",
@@ -172,7 +173,7 @@ use_deseq_targets <- function(dir = NULL) {
 
       msg <- sprintf(
         "Specified directory already exists '%s'. Do you want to proceed? Existing versions of the _targets pipeline script, functions and Quarto report file will be overwritten.",
-        normalizePath(wd, winslash = "/")
+        normalizePath(dir, winslash = "/")
       )
 
       # Wrap to console width (or set a specific width)
@@ -183,13 +184,39 @@ use_deseq_targets <- function(dir = NULL) {
     wd <- dir
   }
 
-  #Copy _targets_bulkRNA_DESeq2.R pipeline template into specified directory.
-  # Get the full path to the internal template file from the package
-  template_path <- system.file("templates", "targets-pipelines", "_targets_bulkRNA_DESeq2.R",
+  #Copy _targets pipeline template into specified directory.
+
+  if(type == "deseq2") {
+
+    #Make copies of the demo sample sheet and counts matrix in the specified directory.
+    #load demo counts data and sample sheet and save them into working directory.
+    utils::write.csv(cmribio::demo_samplesheet, file.path(wd, "cmribio_demo_samplesheet.csv"), row.names = T)
+    data.table::fwrite(cmribio::demo_counts, file.path(wd, "cmribio_demo_counts_matrix.tsv"), sep = "\t")
+
+    #path to template _target.R script
+    template_path <- system.file("templates", "targets-pipelines", "_targets_bulkRNA_DESeq2.R",
+                                 package = "cmribio")
+
+    # Path to functions file needed for the pipeline.
+    functions_path <- system.file("templates", "targets-functions", "targets_bulkRNA_DESeq2_functions.R",
+                                  package = "cmribio")
+
+    # Path to Quarto report file needed for the pipeline.
+    report_path <- system.file("templates", "targets-quarto", "DESeq2_analysis_report.qmd",
                                package = "cmribio")
+
+  }
 
   if (template_path == "") {
     stop("Template file not found in the package.")
+  }
+
+  if (functions_path == "") {
+    stop("Pipeline functions file not found in the package.")
+  }
+
+  if (report_path == "") {
+    stop("Pipeline functions file not found in the package.")
   }
 
   # Copy the file to the new location with a new name
@@ -200,15 +227,7 @@ use_deseq_targets <- function(dir = NULL) {
   )
 
   if (!success) {
-    stop("File copy failed. Check permissions or paths.")
-  }
-
-  # Copy functions file needed for the pipeline.
-  functions_path <- system.file("templates", "targets-functions", "targets_bulkRNA_DESeq2_functions.R",
-                               package = "cmribio")
-
-  if (functions_path == "") {
-    stop("Pipeline functions file not found in the package.")
+    stop("Template file copy failed. Check permissions or paths.")
   }
 
   # Copy the file to the new location with a new name
@@ -222,14 +241,6 @@ use_deseq_targets <- function(dir = NULL) {
     stop("Functions script copy failed. Check permissions or paths.")
   }
 
-  # Copy Quarto report file needed for the pipeline.
-  report_path <- system.file("templates", "targets-quarto", "DESeq2_analysis_report.qmd",
-                                package = "cmribio")
-
-  if (report_path == "") {
-    stop("Pipeline functions file not found in the package.")
-  }
-
   # Copy the file to the new location with a new name
   success <- file.copy(
     from = report_path,
@@ -238,14 +249,8 @@ use_deseq_targets <- function(dir = NULL) {
   )
 
   if (!success) {
-    stop("Functions script copy failed. Check permissions or paths.")
+    stop("Quarto report template copy failed. Check permissions or paths.")
   }
-
-  #Now, make copies of the demo sample sheet and counts matrix in the specified directory.
-  #load demo counts data and sample sheet and save them into working directory.
-  utils::write.csv(cmribio::demo_samplesheet, file.path(wd, "cmribio_demo_samplesheet.csv"), row.names = T)
-  data.table::fwrite(cmribio::demo_counts, file.path(wd, "cmribio_demo_counts_matrix.tsv"), sep = "\t")
-
 
 }
 

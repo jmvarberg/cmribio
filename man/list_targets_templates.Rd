@@ -7,8 +7,12 @@
 list_targets_templates()
 }
 \value{
-List of all targets templates included in the package
+Data frame with names and descriptions of templates available in the package, and they 'type' value to provide to cmribio::use_targets_template() to access.
 }
 \description{
 List available targets pipeline templates
+}
+\examples{
+list_targets_templates()
+
 }

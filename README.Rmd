@@ -29,4 +29,60 @@ You can install the development version of cmribio from [GitHub](https://github.
 pak::pak("jmvarberg/cmribio")
 ```
 
+## Initialize Project
 
+Each project should be contained in it's own project directory with specific subdirectories, and should contain a README file to capture any notes/information about the project to enable another member/user to continue working on the project if needed.
+
+A helper function has been provided to create all subdirectories and a template README file.
+
+```{r}
+temp <- tempdir()
+cmribio::init_proj(dir = temp, overwrite = TRUE)
+
+```
+
+We can see the subdirectories created:
+
+```{r}
+#| echo: false
+
+fs::dir_tree(temp, recurse = TRUE)
+
+```
+
+A template README is also created, which you should open and modify as needed for your project.
+
+```{r}
+#| echo: false
+
+txt_path <- file.path(temp, "README.txt")  # or some other file you've created
+if (file.exists(txt_path)) {
+  cat(readLines(txt_path), sep = "\n")
+} else {
+  message("File not found: ", txt_path)
+}
+```
+
+
+## Pipeline Templates
+
+Template files, functions and Quarto documents for automated reporting are provided for a few common workflows. These templates are created using the [`{targets}`](https://books.ropensci.org/targets/) package to provide scalable, efficient and automated pipelines and report generation. To see a list of the available templates, use the function 'cmribio::list_targets_templates()`:
+
+```{r}
+cmribio::list_targets_templates()
+```
+
+To use one of the templates, use the function `cmribio::use_target_template()` and provide one of the available values for 'Type' (returned by list_targets_templates()) to copy the pipeline and all associated files to the specified directory.
+
+```{r}
+temp <- tempdir()
+cmribio::use_targets_template(dir = temp, type = "deseq2")
+```
+
+
+```{r}
+#| echo: false
+
+fs::dir_tree(temp, recurse = TRUE)
+
+```
