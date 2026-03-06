@@ -190,8 +190,8 @@ use_targets_template <- function(dir = NULL, type = c("deseq2")) {
 
     #Make copies of the demo sample sheet and counts matrix in the specified directory.
     #load demo counts data and sample sheet and save them into working directory.
-    utils::write.csv(cmribio::demo_samplesheet, file.path(wd, "cmribio_demo_samplesheet.csv"), row.names = T)
-    data.table::fwrite(cmribio::demo_counts, file.path(wd, "cmribio_demo_counts_matrix.tsv"), sep = "\t")
+    utils::write.csv(cmribio::demo_samplesheet, file.path(wd, "cmribio_demo_samplesheet.csv"), row.names = FALSE)
+    data.table::fwrite(cmribio::demo_counts, file.path(wd, "cmribio_demo_counts_matrix.tsv"), sep = "\t", row.names = TRUE)
 
     #path to template _target.R script
     template_path <- system.file("templates", "targets-pipelines", "_targets_bulkRNA_DESeq2.R",
