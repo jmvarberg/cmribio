@@ -4,8 +4,9 @@
 # Analysis Functions ------------------------------------------------------
 A01_make_counts <- function(gene_counts) {
 
-  counts_matrix <- gene_counts %>%
-    dplyr::mutate(across(where(is.numeric), as.integer))
+  counts_matrix <- gene_counts |>
+    dplyr::mutate(across(where(is.numeric), as.integer)) |>
+    tibble::column_to_rownames(var = "V1")
 
   #remove features/rows where there are zero counts in all columns/samples
   counts_matrix <- counts_matrix[rowSums(counts_matrix != 0) > 0, , drop = F]
