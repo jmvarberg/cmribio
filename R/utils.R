@@ -243,7 +243,7 @@ use_deseq_targets <- function(dir = NULL) {
 
   #Now, make copies of the demo sample sheet and counts matrix in the specified directory.
   #load demo counts data and sample sheet and save them into working directory.
-  utils::write.csv(cmribio::demo_samplesheet, file.path(wd, "cmribio_demo_samplesheet.csv"), row.names = F)
+  utils::write.csv(cmribio::demo_samplesheet, file.path(wd, "cmribio_demo_samplesheet.csv"), row.names = T)
   data.table::fwrite(cmribio::demo_counts, file.path(wd, "cmribio_demo_counts_matrix.tsv"), sep = "\t")
 
 
