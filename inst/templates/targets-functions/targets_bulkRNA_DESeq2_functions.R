@@ -23,7 +23,7 @@ A02_make_colData <- function(sample_sheet, counts_matrix) {
     dplyr::mutate(group = dplyr::case_when(stringr::str_detect(sample_title, "Macrophage") ~ "Macrophage",
                                            stringr::str_detect(sample_title, "MNGC") ~ "MNGC",
                                            stringr::str_detect(sample_title, "Stroma") ~ "Stroma")
-                  ) |>  #add mutate calls etc. to modify/rename metadata columns as needed for DESeq2 design
+    ) |>  #add mutate calls etc. to modify/rename metadata columns as needed for DESeq2 design
     dplyr::arrange(match(sample, colnames(counts_matrix))) |> #this makes sure columns are ordered in the same order as columns in counts matrix
     DataFrame() #this last step needed in order to get the DESeq2 object creation to work
 }
@@ -45,7 +45,12 @@ A03_annotate_results <- function(results, species = c("human", "mouse"), id_type
 }
 
 #normalized_dds_object - either rlog() or vst(); de_results_list - full DE results for each contrast/comparison
-A04_quickomics_export <- function(normalized_dds_object, de_results_list, model_name = NULL, outDir = "./results/Quickomics") {
+A04_quickomics_export <- function(normalized_dds_object,
+                                  de_results_list,
+                                  sample_col = "sample",
+                                  group_col = "group",
+                                  model_name = NULL,
+                                  outDir = "./results/Quickomics") {
 
   output_location <- file.path(outDir, model_name)
 
@@ -57,9 +62,9 @@ A04_quickomics_export <- function(normalized_dds_object, de_results_list, model_
 
   #metadata: sampleid, group, additional columns. sampleid must match expresion data file column names
   quickomics_md <- as.data.frame(colData(normalized_dds_object)) |>
-    dplyr::rename(sampleid = sample,
-                  genotype = cell_line) |>
-    dplyr::select(sampleid, group, everything(), -sizeFactor)
+    dplyr::rename(sampleid = all_of(sample_col),
+                  group = all_of(group_col)) |>
+    dplyr::select(sampleid, group, everything(), -any_of("sizeFactor"))
   quickomics_md
 
   write.csv(quickomics_md, file = file.path(output_location,"quickomics_metadata.csv"), row.names = F)
@@ -88,7 +93,7 @@ A04_quickomics_export <- function(normalized_dds_object, de_results_list, model_
 
   write.csv(quickomics_tests, file = file.path(output_location, "quickomics_comparison.csv"), row.names = F)
 
-  return(list(meta = quickomics_metadata,
+  return(list(meta = quickomics_md,
               norm_expr = quickomics_expression,
               de_res = quickomics_tests))
 
@@ -120,8 +125,8 @@ A05_Metascape_files <- function(annotated_significant_results) {
 
   message("Creating ./results/Metascape/ directory to save up and down-regulated gene lists.")
   dir.create("./results/Metascape", recursive = TRUE)
-  write.csv(output_up, file.path("./results/Metascape", "Up_DEGs_for_Metascape.csv", row.names = F))
-  write.csv(output_down, file.path("./results/Metascape", "Down_DEGs_for_Metascape.csv", row.names = F))
+  write.csv(output_up, file.path("./results/Metascape", "Up_DEGs_for_Metascape.csv"), row.names = F)
+  write.csv(output_down, file.path("./results/Metascape", "Down_DEGs_for_Metascape.csv"), row.names = F)
 
   #return the up/down results in Metascape format as list
   return(list(metascape_up_degs = output_up,
