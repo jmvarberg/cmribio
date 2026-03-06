@@ -58,6 +58,80 @@
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"jmvarberg/cmribio"</span><span class="op">)</span></span></code></pre></div>
 </div>
+<div class="section level2">
+<h2 id="initialize-project">Initialize Project<a class="anchor" aria-label="anchor" href="#initialize-project"></a>
+</h2>
+<p>Each project should be contained in it’s own project directory with specific subdirectories, and should contain a README file to capture any notes/information about the project to enable another member/user to continue working on the project if needed.</p>
+<p>A helper function has been provided to create all subdirectories and a template README file.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">temp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu">cmribio</span><span class="fu">::</span><span class="fu"><a href="reference/init_proj.html">init_proj</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="va">temp</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Parent directory exists: /private/var/folders/y6/wmk7zjhj649bvdzcyt87gp9xrvkk8z/T/RtmpAwSkk4</span></span>
+<span><span class="co">#&gt; Wrote README at: /private/var/folders/y6/wmk7zjhj649bvdzcyt87gp9xrvkk8z/T/RtmpAwSkk4/README.txt</span></span></code></pre></div>
+<p>We can see the subdirectories created:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co">#&gt; /var/folders/y6/wmk7zjhj649bvdzcyt87gp9xrvkk8z/T//RtmpAwSkk4</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt; ├── README.txt</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; ├── data</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; ├── documents</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; ├── results</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; └── scripts</span></span></code></pre></div>
+<p>A template README is also created, which you should open and modify as needed for your project.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co">#&gt; Project Title: &lt;Your Project Name&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; Date: 2026-03-06</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt; Overview</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt; --------</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt; Add notes about the project and analysis here as needed.</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; Data</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; ----</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; - Describe input data sources and formats.</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; - Note any preprocessing steps.</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; Analysis</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; --------</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; - Briefly outline methods, tools, and parameters.</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; Reproducibility</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; ---------------</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt; - R version: 4.5.0</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt; - Package versions: </span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt; - How to reproduce: </span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt; Contact</span></span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt; -------</span></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt; - Author: Your Name</span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt; - Email: you@example.com</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="pipeline-templates">Pipeline Templates<a class="anchor" aria-label="anchor" href="#pipeline-templates"></a>
+</h2>
+<p>Template files, functions and Quarto documents for automated reporting are provided for a few common workflows. These templates are created using the <a href="https://books.ropensci.org/targets/" class="external-link"><code>{targets}</code></a> package to provide scalable, efficient and automated pipelines and report generation. To see a list of the available templates, use the function ’cmribio::list_targets_templates()`:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">cmribio</span><span class="fu">::</span><span class="fu"><a href="reference/list_targets_templates.html">list_targets_templates</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     Name   Type                     Description</span></span>
+<span><span class="co">#&gt; 1 DEseq2 deseq2 DESeq2 for bulk RNAseq analysis</span></span></code></pre></div>
+<p>To use one of the templates, use the function <code>cmribio::use_target_template()</code> and provide one of the available values for ‘Type’ (returned by list_targets_templates()) to copy the pipeline and all associated files to the specified directory.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">temp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu">cmribio</span><span class="fu">::</span><span class="fu"><a href="reference/use_targets_template.html">use_targets_template</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="va">temp</span>, type <span class="op">=</span> <span class="st">"deseq2"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Specified directory already exists</span></span>
+<span><span class="co">#&gt; '/private/var/folders/y6/wmk7zjhj649bvdzcyt87gp9xrvkk8z/T/RtmpAwSkk4'. Do you</span></span>
+<span><span class="co">#&gt; want to proceed? Existing versions of the _targets pipeline script, functions</span></span>
+<span><span class="co">#&gt; and Quarto report file will be overwritten. (yes/No/cancel)</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co">#&gt; /var/folders/y6/wmk7zjhj649bvdzcyt87gp9xrvkk8z/T//RtmpAwSkk4</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#&gt; ├── DESeq2_analysis_report.qmd</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt; ├── README.txt</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; ├── _targets.R</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; ├── cmribio_demo_counts_matrix.tsv</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; ├── cmribio_demo_samplesheet.csv</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt; ├── data</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt; ├── documents</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; ├── results</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; ├── scripts</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; └── targets_bulkRNA_DESeq2_functions.R</span></span></code></pre></div>
+</div>
 </div>
   </main><aside class="col-md-3"><div class="license">
 <h2 data-toc-skip>License</h2>

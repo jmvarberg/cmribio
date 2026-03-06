@@ -10,4 +10,14 @@ list_targets_templates()
 
 ## Value
 
-List of all targets templates included in the package
+Data frame with names and descriptions of templates available in the
+package, and they 'type' value to provide to
+cmribio::use_targets_template() to access.
+
+## Examples
+
+``` r
+list_targets_templates()
+#>     Name   Type                     Description
+#> 1 DEseq2 deseq2 DESeq2 for bulk RNAseq analysis
+```

@@ -25,5 +25,5 @@
   : Run limma::cameraPR
 - [`swap_ensmbl_for_symbols()`](https://jmvarberg.github.io/cmribio/reference/swap_ensmbl_for_symbols.md)
   : Convert ENSMBL IDs to Gene Symbols
-- [`use_deseq_targets()`](https://jmvarberg.github.io/cmribio/reference/use_deseq_targets.md)
+- [`use_targets_template()`](https://jmvarberg.github.io/cmribio/reference/use_targets_template.md)
   : Use targets pipeline templates for bulk RNAseq analysis with DESeq2
