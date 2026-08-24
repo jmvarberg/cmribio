@@ -10,6 +10,7 @@ You can install the development version of cmribio from
 [GitHub](https://github.com/) with:
 
 ``` r
+
 # install.packages("pak")
 pak::pak("jmvarberg/cmribio")
 ```
@@ -25,6 +26,7 @@ A helper function has been provided to create all subdirectories and a
 template README file.
 
 ``` r
+
 temp <- tempdir()
 cmribio::init_proj(dir = temp, overwrite = TRUE)
 #> Parent directory exists: /private/var/folders/y6/wmk7zjhj649bvdzcyt87gp9xrvkk8z/T/RtmpAwSkk4
@@ -85,6 +87,7 @@ generation. To see a list of the available templates, use the function
 ’cmribio::list_targets_templates()\`:
 
 ``` r
+
 cmribio::list_targets_templates()
 #>     Name   Type                     Description
 #> 1 DEseq2 deseq2 DESeq2 for bulk RNAseq analysis
@@ -96,6 +99,7 @@ for ‘Type’ (returned by list_targets_templates()) to copy the pipeline
 and all associated files to the specified directory.
 
 ``` r
+
 temp <- tempdir()
 cmribio::use_targets_template(dir = temp, type = "deseq2")
 #> Specified directory already exists

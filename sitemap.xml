@@ -4,6 +4,7 @@
 <url><loc>https://jmvarberg.github.io/cmribio/LICENSE.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/authors.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/index.html</loc></url>
+<url><loc>https://jmvarberg.github.io/cmribio/reference/bcb_colors.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/reference/camera_dotplot.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/reference/cmri_datatable.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/reference/create_bcb_report.html</loc></url>
@@ -15,9 +16,12 @@
 <url><loc>https://jmvarberg.github.io/cmribio/reference/index.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/reference/init_proj.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/reference/list_targets_templates.html</loc></url>
+<url><loc>https://jmvarberg.github.io/cmribio/reference/pal_bcb.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/reference/pathway_heatmap.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/reference/run_cameraPR.html</loc></url>
+<url><loc>https://jmvarberg.github.io/cmribio/reference/scale_bcb.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/reference/swap_ensmbl_for_symbols.html</loc></url>
+<url><loc>https://jmvarberg.github.io/cmribio/reference/theme_bcb.html</loc></url>
 <url><loc>https://jmvarberg.github.io/cmribio/reference/use_targets_template.html</loc></url>
 </urlset>
 
