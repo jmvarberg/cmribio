@@ -1,4 +1,30 @@
 url: https://jmvarberg.github.io/cmribio/
 template:
   bootstrap: 5
+reference:
+  - title: Utilities
+    contents:
+      - init_proj
+      - create_bcb_report
+      - cmri_datatable
+      - list_targets_templates
+      - use_targets_template
+
+  - title: RNAseq Helpers
+    contents:
+      - demo_counts
+      - demo_samplesheet
+      - swap_ensmbl_for_symbols
+      - get_genesets
+      - run_cameraPR
+
+  - title: Visualizations
+    contents:
+      - bcb_colors
+      - pal_bcb
+      - scale_color_bcb
+      - scale_fill_bcb
+      - theme_bcb
+      - camera_dotplot
+      - pathway_heatmap
 
