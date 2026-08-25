@@ -125,7 +125,7 @@ Here are basic examples of using static and interactive plots.
 ```{r}
 #| label: fig-static-plot
 #| fig-cap: "Static penguin plot"
-p <- ggplot(penguins, aes(x = bill_len, y = bill_dep, color = species, text1 = island, text2=flipper_len, text3 = body_mass, text4 = sex, text5 = year)) + 
+p <- ggplot(mtcars, aes(x = mpg, y = wt, color = factor(cyl), text1 = disp, text2=drat, text3 = qsec, text4 = gear, text5 = carb)) + 
   geom_point() + 
   scale_color_bcb() +
   theme_bcb(base_theme = "bw")
@@ -137,7 +137,7 @@ p + ggtitle("Static Plot Output")
 
 ```{r}
 #| label: fig-interactive-plot
-#| fig-cap: "Interactive penguin plot"
+#| fig-cap: "Interactive plot"
 library(plotly)
 #interactive plot
 pp <- p + ggtitle("ggplotly Interactive Output")
@@ -175,7 +175,7 @@ p
 ## Table
 
 ```{r}
-penguins |> cmribio::cmri_datatable()
+mtcars |> cmribio::cmri_datatable()
 ```
 
 :::
