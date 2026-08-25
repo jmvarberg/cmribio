@@ -20,11 +20,13 @@ cmri_datatable(df, digits = 2, ...)
 
 - ...:
 
-  Additional parameters to pass to \`DT::datatable\`
+  Additional parameters to pass to
+  [`DT::datatable`](https://rdrr.io/pkg/DT/man/datatable.html)
 
 ## Value
 
-Embedded HTML data table, \`DT::datatable\` object
+Embedded HTML data table,
+[`DT::datatable`](https://rdrr.io/pkg/DT/man/datatable.html) object
 
 ## Examples
 
