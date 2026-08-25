@@ -61,7 +61,7 @@ Information on project background and analysis goals.
 
 **Bold** any important information, and *italicize* any key terms. Use bullet points to list items.
 
-Embed a locally-saved image like this: ![logo](../../../../docs/logo.png ){#fig-logo}
+Embed a locally-saved image like this: ![logo](./logo.png ){#fig-logo}
 
 
 Include call-outs (notes, warnings, info etc) to users like this:
