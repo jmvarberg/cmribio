@@ -11,10 +11,10 @@ cmri_datatable(df, digits = 2, ...)
 
 \item{digits}{Number of digits to include in formatted numbers.}
 
-\item{...}{Additional parameters to pass to `DT::datatable`}
+\item{...}{Additional parameters to pass to \code{DT::datatable}}
 }
 \value{
-Embedded HTML data table, `DT::datatable` object
+Embedded HTML data table, \code{DT::datatable} object
 }
 \description{
 Interactive data tables

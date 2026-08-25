@@ -21,7 +21,7 @@ or you need to format with gene names as input for other analysis tools. This is
 to the Single Cell Portal.
 }
 \details{
-The approach uses reference tables from the `annotables` package for the conversion purposes. The grcm38 and grch38 are used for conversion for mouse and human, respectively.
+The approach uses reference tables from the \code{annotables} package for the conversion purposes. The grcm38 and grch38 are used for conversion for mouse and human, respectively.
 One-to-many mapping issues are handled by only replacing the ENSMBL ID if it maps to a unique gene name.
 If multiple ENSMBL IDs map to the same gene symbol, then the feature name is left in ENSMBL format.
 }

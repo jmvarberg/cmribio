@@ -16,7 +16,7 @@ Selects the top n based on the strongest enrichment (-log10(FDR)) for Up and Dow
 }
 \value{
 A named list of ggplot objects: \code{list(Up = <plot>, Down = <plot>)}.
-  You can further modify them with ggplot2 methods.
+You can further modify them with ggplot2 methods.
 }
 \description{
 Create dot plots of cameraPR results by direction and contrast

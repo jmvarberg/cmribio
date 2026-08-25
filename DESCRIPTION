@@ -33,10 +33,15 @@ Imports:
     stringr,
     pheatmap,
     grDevices,
-    cowplot
+    cowplot,
+    lifecycle,
+    cli,
+    glue,
+    withr
 Suggests:
     annotables
 Remotes:
     github::jmvarberg/jmvtools,
     github::stephenturner/annotables
 URL: https://jmvarberg.github.io/cmribio/
+Roxygen: list(markdown = TRUE)
