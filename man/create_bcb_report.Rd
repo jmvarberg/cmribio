@@ -7,7 +7,7 @@
 create_bcb_report(
   file_name = NULL,
   dir = NULL,
-  ext_name = c("bcb-report", "bulk-rnaseq")
+  ext_name = c("bcb-report", "bcb-report-rmd", "bulk-rnaseq")
 )
 }
 \arguments{
@@ -15,7 +15,7 @@ create_bcb_report(
 
 \item{dir}{Directory to save the report file to. Default is NULL, which will default to the current working directory.}
 
-\item{ext_name}{Which template to use. One of c("bcb-report", "bulk-rnaseq"). Use "bcb-report" for general analyses, and "bulk-rnaseq" to perform DESeq2 analysis of RNAseq datasets.}
+\item{ext_name}{Which template to use. One of c("bcb-report", "bcb-report-rmd", "bulk-rnaseq"). Use "bcb-report" for general analyses with Quarto (or "bcb-report-rmd" for RMarkdown equivalent), and "bulk-rnaseq" to perform DESeq2 analysis of RNAseq datasets.}
 }
 \value{
 Copies template file into working directory.

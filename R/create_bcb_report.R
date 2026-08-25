@@ -2,7 +2,7 @@
 #'
 #' @param file_name Name for the Quarto report file.
 #' @param dir Directory to save the report file to. Default is NULL, which will default to the current working directory.
-#' @param ext_name Which template to use. One of c("bcb-report", "bulk-rnaseq"). Use "bcb-report" for general analyses, and "bulk-rnaseq" to perform DESeq2 analysis of RNAseq datasets.
+#' @param ext_name Which template to use. One of c("bcb-report", "bcb-report-rmd", "bulk-rnaseq"). Use "bcb-report" for general analyses with Quarto (or "bcb-report-rmd" for RMarkdown equivalent), and "bulk-rnaseq" to perform DESeq2 analysis of RNAseq datasets.
 #'
 #' @returns Copies template file into working directory.
 #' @importFrom utils file.edit
@@ -12,7 +12,7 @@
 #' if (interactive()) {
 #' create_bcb_report(file_name = "BCB172_Analysis", ext_name = "bcb-report")
 #' }
-create_bcb_report <- function(file_name = NULL, dir = NULL, ext_name = c("bcb-report", "bulk-rnaseq")) {
+create_bcb_report <- function(file_name = NULL, dir = NULL, ext_name = c("bcb-report", "bcb-report-rmd", "bulk-rnaseq")) {
   if (is.null(file_name)) {
     stop("You must provide a valid file_name")
   }
@@ -26,9 +26,14 @@ create_bcb_report <- function(file_name = NULL, dir = NULL, ext_name = c("bcb-re
   }
 
   # check for available extensions
-  stopifnot("Specified Report Template not found in package. Available options are 'bcb-report' or 'bulk-rnaseq'" = ext_name %in% c("bcb-report", "bulk-rnaseq"))
+  stopifnot("Specified Report Template not found in package. Available options are 'bcb-report', 'bcb-report-rmd', or 'bulk-rnaseq'" = ext_name %in% c("bcb-report", "bcb-report-rmd", "bulk-rnaseq"))
 
   # copy from internals
+
+
+# bcb-report Quarto -------------------------------------------------------
+
+
   if(ext_name == "bcb-report") {
 
     # Get the full path to the internal template file from the package
@@ -50,6 +55,36 @@ create_bcb_report <- function(file_name = NULL, dir = NULL, ext_name = c("bcb-re
       stop("File copy failed. Check permissions or paths.")
     }
   }
+
+
+# bcb-report RMarkdown ----------------------------------------------------
+
+
+  # copy from internals
+  if(ext_name == "bcb-report-rmd") {
+
+    # Get the full path to the internal template file from the package
+    template_path <- system.file("extdata/_extensions/bcb-report-rmd/cmri-bcb-report-template-rmarkdown.Rmd",
+                                 package = "cmribio")
+
+    if (template_path == "") {
+      stop("Template file not found in the package.")
+    }
+
+    # Copy the file to the new location with a new name
+    success <- file.copy(
+      from = template_path,
+      to = file.path(dir, paste0(file_name, ".Rmd")),
+      overwrite = TRUE
+    )
+
+    if (!success) {
+      stop("File copy failed. Check permissions or paths.")
+    }
+  }
+
+
+# bulk-rnaseq -------------------------------------------------------------
 
 
   if(ext_name == "bulk-rnaseq") {
