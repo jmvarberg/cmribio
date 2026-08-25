@@ -47,6 +47,11 @@ library(rstatix)
 library(data.table)
 library(DT)
 
+#download logo to use for example
+logo <- "https://raw.githubusercontent.com/jmvarberg/cmribio/main/man/figures/logo.png"
+dest <- "logo.png"
+
+download.file(logo, dest)
 ```
 
 
