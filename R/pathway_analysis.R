@@ -15,13 +15,14 @@
 #' @examples
 #' gs <- get_genesets(species = "human", sets = "hallmark")
 #' head(gs)
-get_genesets <- function(species = c("human","mouse"), sets = c("hallmark", "kegg", "wiki", "reactome", "go_bp", "go_cc", "go_mf")) {
-
+get_genesets <- function(
+  species = c("human", "mouse"),
+  sets = c("hallmark", "kegg", "wiki", "reactome", "go_bp", "go_cc", "go_mf")
+) {
   species <- match.arg(species)
   sets <- match.arg(sets, several.ok = TRUE)
 
-  if(species == "mouse") {
-
+  if (species == "mouse") {
     gs <- c()
 
     if ("hallmark" %in% sets) {
@@ -31,16 +32,16 @@ get_genesets <- function(species = c("human","mouse"), sets = c("hallmark", "keg
       gs <- c(gs, "WikiPathways")
     }
     if ("reactome" %in% sets) {
-      gs <- c(gs, "`Reactome Pathways`")
+      gs <- c(gs, "Reactome Pathways")
     }
     if ("go_bp" %in% sets) {
-      gs <- c(gs, "`GO Biological Process`")
+      gs <- c(gs, "GO Biological Process")
     }
     if ("go_cc" %in% sets) {
-      gs <- c(gs, "`GO Cellular Component`")
+      gs <- c(gs, "GO Cellular Component")
     }
     if ("go_cc" %in% sets) {
-      gs <- c(gs, "`GO Molecular Function`")
+      gs <- c(gs, "GO Molecular Function")
     }
     if ("kegg" %in% sets) {
       stop("KEGG database not available for mouse.")
@@ -54,8 +55,7 @@ get_genesets <- function(species = c("human","mouse"), sets = c("hallmark", "keg
     return(selected_gs)
   }
 
-  if(species == "human") {
-
+  if (species == "human") {
     gs <- c()
 
     if ("hallmark" %in% sets) {
@@ -65,19 +65,19 @@ get_genesets <- function(species = c("human","mouse"), sets = c("hallmark", "keg
       gs <- c(gs, "WikiPathways")
     }
     if ("reactome" %in% sets) {
-      gs <- c(gs, "`Reactome Pathways`")
+      gs <- c(gs, "Reactome Pathways")
     }
     if ("go_bp" %in% sets) {
-      gs <- c(gs, "`GO Biological Process`")
+      gs <- c(gs, "GO Biological Process")
     }
     if ("go_cc" %in% sets) {
-      gs <- c(gs, "`GO Cellular Component`")
+      gs <- c(gs, "GO Cellular Component")
     }
     if ("go_cc" %in% sets) {
-      gs <- c(gs, "`GO Molecular Function`")
+      gs <- c(gs, "GO Molecular Function")
     }
     if ("kegg" %in% sets) {
-      gs <- c(gs, "`KEGG Legacy Pathways`")
+      gs <- c(gs, "KEGG Legacy Pathways")
     }
 
     all_gs <- msigdbr::msigdbr(db_species = "HS", species = "human")
@@ -85,9 +85,7 @@ get_genesets <- function(species = c("human","mouse"), sets = c("hallmark", "keg
     selected_gs <- all_gs |> dplyr::filter(.data$gs_collection_name %in% gs)
 
     return(selected_gs)
-
   }
-
 }
 
 
@@ -102,11 +100,13 @@ get_genesets <- function(species = c("human","mouse"), sets = c("hallmark", "keg
 #' @returns list containing limma::cameraPR results for each contrast/logFC vector tested.
 #' @export
 #'
-run_cameraPR <- function(geneset_df, de_results,
-                         fc_col = "log2FoldChange",
-                         ens_col = "ensemble_gene_id",
-                         comp_col = "test") {
-
+run_cameraPR <- function(
+  geneset_df,
+  de_results,
+  fc_col = "log2FoldChange",
+  ens_col = "ensemble_gene_id",
+  comp_col = "test"
+) {
   #split data frame of gene sets into a list
   gs_list <- split(x = geneset_df$ensembl_gene, f = geneset_df$gs_name)
 
@@ -126,14 +126,17 @@ run_cameraPR <- function(geneset_df, de_results,
   #This function takes a list of gene sets, and a vector of logFC values with ENSGENE names. Creates and index and runs cameraPR on it.
   index_and_run <- function(gs_list, logFC_vector) {
     cam_index <- limma::ids2indices(gs_list, names(logFC_vector))
-    camPR_res <- limma::cameraPR(statistic = logFC_vector, index = cam_index, use.ranks = TRUE)
+    camPR_res <- limma::cameraPR(
+      statistic = logFC_vector,
+      index = cam_index,
+      use.ranks = TRUE
+    )
   }
 
   #now, we run this on each logFC vector in our list of DE results - one for each comparison made
   camera_results <- lapply(de_list_vectors, index_and_run, gs_list = gs_list)
 
   return(camera_results)
-
 }
 
 
@@ -159,7 +162,6 @@ run_cameraPR <- function(geneset_df, de_results,
 #' @export
 #'
 camera_dotplot <- function(x, n_path = 10) {
-
   required_cols <- c("Direction", "Contrast", "NGenes", "GeneSet", "FDR")
   missing <- setdiff(required_cols, names(x))
   if (length(missing) > 0) {
@@ -192,11 +194,16 @@ camera_dotplot <- function(x, n_path = 10) {
 
   # Pretty size breaks for NGenes
   ext_fun <- scales::breaks_pretty(n = 4)
-  size_breaks <- ext_fun(c(min(x$NGenes, na.rm = TRUE), max(x$NGenes, na.rm = TRUE)))
+  size_breaks <- ext_fun(c(
+    min(x$NGenes, na.rm = TRUE),
+    max(x$NGenes, na.rm = TRUE)
+  ))
 
   # Clean up GeneSet labels and compute MaxSig per (Direction, GeneSet)
   x <- x |>
-    dplyr::mutate(GeneSet = stringr::str_replace_all(.data[["GeneSet"]], "_", " ")) |>
+    dplyr::mutate(
+      GeneSet = stringr::str_replace_all(.data[["GeneSet"]], "_", " ")
+    ) |>
     dplyr::group_by(.data[["Direction"]], .data[["GeneSet"]]) |>
     dplyr::mutate(MaxSig = max(-log10(.data[["FDR"]]), na.rm = TRUE))
 
@@ -204,7 +211,10 @@ camera_dotplot <- function(x, n_path = 10) {
   top_gs <- x |>
     dplyr::ungroup() |>
     dplyr::group_by(.data[["Direction"]], .data[["GeneSet"]]) |>
-    dplyr::summarise(MaxSigFilt = max(.data[["MaxSig"]], na.rm = TRUE), .groups = "drop") |>
+    dplyr::summarise(
+      MaxSigFilt = max(.data[["MaxSig"]], na.rm = TRUE),
+      .groups = "drop"
+    ) |>
     dplyr::group_by(.data[["Direction"]]) |>
     dplyr::arrange(dplyr::desc(.data[["MaxSigFilt"]])) |>
     dplyr::slice_head(n = n_path) |>
@@ -212,7 +222,10 @@ camera_dotplot <- function(x, n_path = 10) {
 
   # UP plot
   up <- x |>
-    dplyr::filter(.data[["Direction"]] == "Up", .data[["GeneSet"]] %in% top_gs$Up$GeneSet) |>
+    dplyr::filter(
+      .data[["Direction"]] == "Up",
+      .data[["GeneSet"]] %in% top_gs$Up$GeneSet
+    ) |>
     ggplot2::ggplot(ggplot2::aes(
       x = -log10(.data[["FDR"]]),
       y = stats::reorder(.data[["GeneSet"]], .data[["MaxSig"]]),
@@ -221,11 +234,11 @@ camera_dotplot <- function(x, n_path = 10) {
     )) +
     ggplot2::geom_point(alpha = 0.7, color = "black", pch = 21) +
     ggplot2::scale_size_area(
-      name    = "# Genes in Set",
-      breaks  = size_breaks,
-      limits  = c(min(size_breaks), max(size_breaks)),
+      name = "# Genes in Set",
+      breaks = size_breaks,
+      limits = c(min(size_breaks), max(size_breaks)),
       max_size = 10,
-      oob     = scales::oob_squish
+      oob = scales::oob_squish
     ) +
     ggplot2::facet_wrap(~ .data[["Direction"]]) +
     ggplot2::ylab("") +
@@ -233,13 +246,22 @@ camera_dotplot <- function(x, n_path = 10) {
     ggplot2::theme_bw() +
     ggplot2::theme(
       strip.background = ggplot2::element_blank(),
-      strip.text = ggplot2::element_text(face = "bold", color = "black", size = 12)
+      strip.text = ggplot2::element_text(
+        face = "bold",
+        color = "black",
+        size = 12
+      )
     ) +
-    ggplot2::guides(fill = ggplot2::guide_legend(override.aes = list(size = 6), order = 1))
+    ggplot2::guides(
+      fill = ggplot2::guide_legend(override.aes = list(size = 6), order = 1)
+    )
 
   # DOWN plot
   down <- x |>
-    dplyr::filter(.data[["Direction"]] == "Down", .data[["GeneSet"]] %in% top_gs$Down$GeneSet) |>
+    dplyr::filter(
+      .data[["Direction"]] == "Down",
+      .data[["GeneSet"]] %in% top_gs$Down$GeneSet
+    ) |>
     ggplot2::ggplot(ggplot2::aes(
       x = -log10(.data[["FDR"]]),
       y = stats::reorder(.data[["GeneSet"]], .data[["MaxSig"]]),
@@ -248,11 +270,11 @@ camera_dotplot <- function(x, n_path = 10) {
     )) +
     ggplot2::geom_point(alpha = 0.7, color = "black", pch = 21) +
     ggplot2::scale_size_area(
-      name    = "# Genes in Set",
-      breaks  = size_breaks,
-      limits  = c(min(size_breaks), max(size_breaks)),
+      name = "# Genes in Set",
+      breaks = size_breaks,
+      limits = c(min(size_breaks), max(size_breaks)),
       max_size = 10,
-      oob     = scales::oob_squish
+      oob = scales::oob_squish
     ) +
     ggplot2::facet_wrap(~ .data[["Direction"]]) +
     ggplot2::ylab("") +
@@ -260,9 +282,15 @@ camera_dotplot <- function(x, n_path = 10) {
     ggplot2::theme_bw() +
     ggplot2::theme(
       strip.background = ggplot2::element_blank(),
-      strip.text = ggplot2::element_text(face = "bold", color = "black", size = 12)
+      strip.text = ggplot2::element_text(
+        face = "bold",
+        color = "black",
+        size = 12
+      )
     ) +
-    ggplot2::guides(fill = ggplot2::guide_legend(override.aes = list(size = 6), order = 1))
+    ggplot2::guides(
+      fill = ggplot2::guide_legend(override.aes = list(size = 6), order = 1)
+    )
 
   # Return result
   list(Up = up, Down = down)
@@ -282,8 +310,13 @@ camera_dotplot <- function(x, n_path = 10) {
 #' @returns pheatmap plot object
 #' @export
 #'
-pathway_heatmap <- function(expr_mat, gs_list, pathway_name, species = c("mouse", "human"), show_rowNames = FALSE) {
-
+pathway_heatmap <- function(
+  expr_mat,
+  gs_list,
+  pathway_name,
+  species = c("mouse", "human"),
+  show_rowNames = FALSE
+) {
   #get genes to plot
   goi <- unique(gs_list[[pathway_name]])
 
@@ -293,23 +326,23 @@ pathway_heatmap <- function(expr_mat, gs_list, pathway_name, species = c("mouse"
   expr <- cmribio::swap_ensmbl_for_symbols(expr, species)
 
   #make heatmap
-  if(show_rowNames) {
-    pheatmap::pheatmap(expr,
-                       cluster_rows = TRUE,
-                       cluster_cols = TRUE,
-                       scale = "row",
-                       color = colorRampPalette(c("darkblue", "white", "firebrick"))(100),
-                       show_rownames = TRUE)
+  if (show_rowNames) {
+    pheatmap::pheatmap(
+      expr,
+      cluster_rows = TRUE,
+      cluster_cols = TRUE,
+      scale = "row",
+      color = colorRampPalette(c("darkblue", "white", "firebrick"))(100),
+      show_rownames = TRUE
+    )
   } else {
-    pheatmap::pheatmap(expr,
-                       cluster_rows = TRUE,
-                       cluster_cols = TRUE,
-                       scale = "row",
-                       color = colorRampPalette(c("darkblue", "white", "firebrick"))(100),
-                       show_rownames = FALSE)
-
-
+    pheatmap::pheatmap(
+      expr,
+      cluster_rows = TRUE,
+      cluster_cols = TRUE,
+      scale = "row",
+      color = colorRampPalette(c("darkblue", "white", "firebrick"))(100),
+      show_rownames = FALSE
+    )
   }
-
-
 }
