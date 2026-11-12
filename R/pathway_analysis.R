@@ -297,13 +297,12 @@ camera_dotplot <- function(x, n_path = 10) {
 }
 
 
-#expectation: expression matrix with ENSG row IDs (human), input pathway name(s) from msigdbr, and list from msigdbr named by pathway with values of ENS IDs
+#expectation: Rownames of expression matrix must be of same type (symbol, ENSGENE, etc) as those in gene set list, input pathway name(s) from msigdbr, and list from msigdbr named by pathway
 #' Heatmap of pathway of interest
 #'
 #' @param expr_mat matrix, expression matrix with ENSEMBL IDs as row names
 #' @param gs_list data frame, list of gene sets for species of interest
 #' @param pathway_name character, name of pathway to use for heatmap.
-#' @param species character, either "mouse" or "human"
 #' @param show_rowNames boolean, whether to show row names on pheatmap::pheatmap output.
 #' @importFrom pheatmap pheatmap
 #' @importFrom grDevices colorRampPalette
@@ -314,18 +313,15 @@ pathway_heatmap <- function(
   expr_mat,
   gs_list,
   pathway_name,
-  species = c("mouse", "human"),
   show_rowNames = FALSE
 ) {
   #get genes to plot
   goi <- unique(gs_list[[pathway_name]])
 
+  #Subset the expression matrix for features that are in the pathway/geneset
   expr <- expr_mat[rownames(expr_mat) %in% goi, ]
 
-  #swap out ensembl IDs for symbols
-  expr <- cmribio::swap_ensmbl_for_symbols(expr, species)
-
-  #make heatmap
+  #make heatmap - need to add title with pathway name.
   if (show_rowNames) {
     pheatmap::pheatmap(
       expr,
@@ -333,7 +329,8 @@ pathway_heatmap <- function(
       cluster_cols = TRUE,
       scale = "row",
       color = colorRampPalette(c("darkblue", "white", "firebrick"))(100),
-      show_rownames = TRUE
+      show_rownames = TRUE,
+      main = pathway_name
     )
   } else {
     pheatmap::pheatmap(
@@ -342,7 +339,8 @@ pathway_heatmap <- function(
       cluster_cols = TRUE,
       scale = "row",
       color = colorRampPalette(c("darkblue", "white", "firebrick"))(100),
-      show_rownames = FALSE
+      show_rownames = FALSE,
+      main = pathway_name
     )
   }
 }
